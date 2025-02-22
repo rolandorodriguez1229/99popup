@@ -33,8 +33,13 @@
     "eslint-config-next": "14.1.0"
   },
 "scripts": {
+  "dev": "next dev",
   "build": "next build",
-  "vercel-build": "npm install && next build"
+  "start": "next start",
+  "lint": "next lint",
+  "vercel-build": "npm install && next build",
+  "postinstall": "npm install --save-dev typescript @types/react @types/node"
 }
+
 
 }
