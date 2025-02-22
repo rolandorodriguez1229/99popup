@@ -1,5 +1,6 @@
-import { supabase } from '../../../lib/supabase'; 
-import FileUploader from '../../components/FileUploader';
+import { supabase } from '@/lib/supabase'; 
+import FileUploader from '@/components/FileUploader';
+
 
 
 
