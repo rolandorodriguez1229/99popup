@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos base */
+:root {
+  --dark-bg: 17, 24, 39;
+  --accent-green: 34, 197, 94;
+  --card-bg: 31, 41, 55;
+}
+
+/* Estilos para el cuerpo de la página */
+body {
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    rgb(17, 24, 39) 0%,
+    rgb(31, 41, 55) 100%
+  );
+  background-attachment: fixed;
+  color: #fff;
+  position: relative;
+}
+
+/* Patrón de fondo elegante */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(
+      rgba(34, 197, 94, 0.05) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(34, 197, 94, 0.05) 1px,
+      transparent 1px
+    );
+  background-size: 50px 50px;
+  pointer-events: none;
+}
+
+/* Estilos adicionales para mejorar la experiencia de usuario */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Mejoras de accesibilidad para el foco */
+:focus {
+  outline: 2px solid rgb(34, 197, 94);
+  outline-offset: 2px;
+}
+
+/* Mejora el contraste de las tarjetas contra el fondo */
+.glass-card {
+  background: rgba(31, 41, 55, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 197, 94, 0.1);
+}
+
+.feature-card {
+  background: rgba(31, 41, 55, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 197, 94, 0.1);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(34, 197, 94, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+} 

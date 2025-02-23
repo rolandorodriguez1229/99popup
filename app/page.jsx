@@ -1,125 +1,136 @@
 'use client';
-import React, { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { FiUploadCloud, FiCheck, FiAlertCircle } from 'react-icons/fi';
 
-export default function UploadPage() {
-  const [files, setFiles] = useState([]);
-  const [loading, setLoading] = useState(false);
+export default function Home() {
+  const [uploadStatus, setUploadStatus] = useState('idle');
   const [message, setMessage] = useState('');
 
-  const handleFileChange = (e) => {
-    // Filtrar solo archivos XML
-    const xmlFiles = Array.from(e.target.files).filter(file => 
-      file.name.toLowerCase().endsWith('.xml')
-    );
-    setFiles(xmlFiles);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (files.length === 0) {
-      setMessage('Por favor selecciona archivos XML');
-      return;
-    }
-
-    setLoading(true);
-    const results = [];
-
+  const onDrop = useCallback(async (acceptedFiles) => {
     try {
-      // Procesar cada archivo
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append('file', file);
+      setUploadStatus('uploading');
+      setMessage('Subiendo archivo...');
+      
+      const file = acceptedFiles[0];
+      const formData = new FormData();
+      formData.append('file', file);
 
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
 
-        const data = await response.json();
-        results.push({
-          fileName: file.name,
-          success: data.success,
-          message: data.message,
-          error: data.error
-        });
+      const result = await response.json();
+
+      if (response.ok) {
+        setUploadStatus('success');
+        setMessage(`¡Archivo procesado! Se guardaron ${result.membersCount} miembros.`);
+      } else {
+        throw new Error(result.error || 'Error al procesar el archivo');
       }
-
-      // Mostrar resumen de resultados
-      const successful = results.filter(r => r.success).length;
-      setMessage(`Procesados ${successful} de ${files.length} archivos exitosamente`);
-      setFiles([]);
     } catch (error) {
-      setMessage('Error al procesar los archivos');
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
+      setUploadStatus('error');
+      setMessage(error.message);
     }
-  };
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'application/xml': ['.xml']
+    },
+    multiple: false
+  });
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Subir Archivos XML</h2>
+    <main className="min-h-screen py-8">
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            99popup File Upload
+          </h1>
+          <p className="text-gray-300 max-w-2xl mx-auto">
+            Sube tus archivos de forma segura y rápida. Admitimos múltiples formatos para tu conveniencia.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Seleccionar Carpeta
-            </label>
-            <input
-              type="file"
-              accept=".xml"
-              webkitdirectory="true"
-              directory="true"
-              onChange={handleFileChange}
-              className="mt-1 block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-indigo-50 file:text-indigo-700
-                hover:file:bg-indigo-100"
-            />
+        {/* Upload Section */}
+        <div className="glass-card rounded-2xl p-8 mb-8">
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer
+              ${isDragActive 
+                ? 'border-green-500 bg-green-500/10' 
+                : 'border-gray-600 hover:border-green-500 hover:bg-green-500/5'}`}
+          >
+            <input {...getInputProps()} />
+            <div className="flex flex-col items-center gap-4">
+              <FiUploadCloud className="w-12 h-12 text-green-500" />
+              <div className="space-y-2">
+                <p className="text-lg font-medium text-white">
+                  Arrastra archivos aquí o haz clic para seleccionar
+                </p>
+                <p className="text-gray-400">
+                  Soportamos archivos PDF, DOCX, XLSX y más
+                </p>
+              </div>
+            </div>
           </div>
 
-          {files.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-700">Archivos XML encontrados:</h3>
-              <ul className="mt-2 text-sm text-gray-600">
-                {files.map((file, index) => (
-                  <li key={index} className="truncate">
-                    {file.webkitRelativePath || file.name}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-2 text-sm text-gray-500">
-                Total: {files.length} archivos
-              </p>
+          {/* Status Indicators */}
+          {uploadStatus === 'uploading' && (
+            <div className="mt-6 p-4 bg-green-500/10 rounded-lg flex items-center gap-3">
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-green-500 border-t-transparent"></div>
+              <span className="text-green-400">Subiendo archivo...</span>
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading || files.length === 0}
-            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-              loading || files.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            {loading ? 'Procesando...' : 'Subir Archivos'}
-          </button>
-        </form>
+          {uploadStatus === 'success' && (
+            <div className="mt-6 p-4 bg-green-500/10 rounded-lg flex items-center gap-3">
+              <FiCheck className="text-green-500 w-5 h-5" />
+              <span className="text-green-400">¡Archivo subido exitosamente!</span>
+            </div>
+          )}
 
-        {message && (
-          <div className={`mt-4 p-4 rounded-md ${
-            message.includes('exitosamente') 
-              ? 'bg-green-50 text-green-700' 
-              : 'bg-red-50 text-red-700'
-          }`}>
-            {message}
-          </div>
-        )}
+          {uploadStatus === 'error' && (
+            <div className="mt-6 p-4 bg-red-500/10 rounded-lg flex items-center gap-3">
+              <FiAlertCircle className="text-red-500 w-5 h-5" />
+              <span className="text-red-400">Error al subir el archivo. Por favor, intenta nuevamente.</span>
+            </div>
+          )}
+        </div>
+
+        {/* Features Section */}
+        <div className="grid md:grid-cols-3 gap-6">
+          <FeatureCard 
+            title="Seguridad Avanzada"
+            description="Encriptación de extremo a extremo para máxima protección"
+            icon="🔐"
+          />
+          <FeatureCard 
+            title="Velocidad Óptima"
+            description="Transferencia de archivos ultra rápida"
+            icon="⚡"
+          />
+          <FeatureCard 
+            title="Compatibilidad Total"
+            description="Soporte para todos los formatos principales"
+            icon="📁"
+          />
+        </div>
       </div>
+    </main>
+  );
+}
+
+function FeatureCard({ title, description, icon }) {
+  return (
+    <div className="feature-card rounded-xl p-6">
+      <div className="text-2xl mb-3">{icon}</div>
+      <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
+      <p className="text-gray-400 text-sm">{description}</p>
     </div>
   );
 }
