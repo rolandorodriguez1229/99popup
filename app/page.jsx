@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FiUploadCloud, FiCheck, FiAlertCircle } from 'react-icons/fi';
+import JobsList from './components/JobsList';
 
 export default function Home() {
   const [uploadStatus, setUploadStatus] = useState('idle');
@@ -44,8 +45,8 @@ export default function Home() {
   });
 
   return (
-    <main className="min-h-screen py-8">
-      <div className="max-w-4xl mx-auto px-4 py-12">
+    <main className="min-h-screen py-8 bg-gray-900">
+      <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-white mb-4">
@@ -102,8 +103,11 @@ export default function Home() {
           )}
         </div>
 
+        {/* Jobs List Section */}
+        <JobsList />
+
         {/* Features Section */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-6 mt-8">
           <FeatureCard 
             title="Seguridad Avanzada"
             description="Encriptación de extremo a extremo para máxima protección"

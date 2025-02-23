@@ -4,21 +4,21 @@
 
 /* Estilos base */
 :root {
-  --dark-bg: 17, 24, 39;
-  --accent-green: 34, 197, 94;
-  --card-bg: 31, 41, 55;
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 17, 24, 39;
+  --background-end-rgb: 13, 17, 23;
 }
 
 /* Estilos para el cuerpo de la página */
 body {
   min-height: 100vh;
+  color: rgb(var(--foreground-rgb));
   background: linear-gradient(
-    135deg,
-    rgb(17, 24, 39) 0%,
-    rgb(31, 41, 55) 100%
+    to bottom,
+    rgb(var(--background-start-rgb)),
+    rgb(var(--background-end-rgb))
   );
   background-attachment: fixed;
-  color: #fff;
   position: relative;
 }
 
@@ -59,20 +59,19 @@ body::before {
 
 /* Mejora el contraste de las tarjetas contra el fondo */
 .glass-card {
-  background: rgba(31, 41, 55, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(34, 197, 94, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .feature-card {
-  background: rgba(31, 41, 55, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(34, 197, 94, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
 }
 
 .feature-card:hover {
+  background: rgba(255, 255, 255, 0.08);
   transform: translateY(-2px);
-  border-color: rgba(34, 197, 94, 0.3);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 } 
