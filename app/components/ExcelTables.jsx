@@ -37,23 +37,41 @@ export default function ExcelTables() {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 'A' });
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+        header: ['A', 'B', 'C', 'D', 'E', 'F'],
+        raw: false,
+        defval: ''
+      });
+
+      console.log('Raw Excel Data:', jsonData);
 
       const processedData = jsonData.slice(1).map(row => {
+        console.log('Processing row:', row);
+        
+        let rowData;
         if (lineNumber === 1) {
-          return {
-            jobNumber: row['B'],
-            bundle: row['C'],
-            linealFeet: row['D']
+          rowData = {
+            jobNumber: row['C'] || '',
+            bundle: row['D'] || '',
+            linealFeet: row['E'] || ''
           };
+          console.log('Line 1 processed row:', rowData);
         } else {
-          return {
-            jobNumber: row['B'],
-            bundle: row['C'],
-            linealFeet: row['E']
+          rowData = {
+            jobNumber: row['B'] || '',
+            bundle: row['C'] || '',
+            linealFeet: row['E'] || ''
           };
+          console.log('Line 2 processed row:', rowData);
         }
-      }).filter(row => row.jobNumber && row.bundle && row.linealFeet); // Filtrar filas vacías
+        return rowData;
+      }).filter(row => {
+        const isValid = Boolean(row.jobNumber && row.bundle && row.linealFeet);
+        console.log('Row validation:', row, isValid);
+        return isValid;
+      });
+
+      console.log('Final processed data:', processedData);
 
       if (lineNumber === 1) {
         setLine1Data(processedData);
