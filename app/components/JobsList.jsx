@@ -51,21 +51,28 @@ export default function JobsList() {
 
   // Función mejorada para convertir pulgadas a pies-pulgadas-dieciseisavos
   const inchesToFeetFormat = (inches) => {
-    // Convertir a número decimal
-    const totalInches = parseFloat(inches);
+    // Convertir el string de pulgadas y fracciones a un número decimal
+    let parts = inches.toString().split(' ');
+    let totalInches = parseFloat(parts[0]);
     
+    // Si hay una fracción, agregarla al total
+    if (parts.length > 1) {
+      let fraction = parts[1].split('/');
+      totalInches += parseInt(fraction[0]) / parseInt(fraction[1]);
+    }
+
     // Calcular pies
     const feet = Math.floor(totalInches / 12);
     
     // Calcular pulgadas restantes
     const remainingInches = totalInches % 12;
-    const wholePart = Math.floor(remainingInches);
+    const wholeInches = Math.floor(remainingInches);
     
     // Convertir la parte decimal a dieciseisavos
-    const fraction = remainingInches - wholePart;
-    const sixteenths = Math.round(fraction * 16);
-    
-    return `${feet}-${wholePart}-${sixteenths}`;
+    const fractionalPart = remainingInches - wholeInches;
+    const sixteenths = Math.round(fractionalPart * 16);
+
+    return `${feet}-${wholeInches}-${sixteenths}`;
   };
 
   // Función para obtener la clase de tamaño de fuente
