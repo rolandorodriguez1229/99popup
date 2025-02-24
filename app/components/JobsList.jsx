@@ -123,6 +123,15 @@ export default function JobsList() {
     }
   };
 
+  // Función para determinar el color según el material
+  const getDescriptionColor = (description) => {
+    if (description.includes('2x4')) return 'text-yellow-400';
+    if (description.includes('2x6')) return 'text-blue-400';
+    if (description.includes('3-1/2X4')) return 'text-red-400';
+    if (description.includes('3.5 x 11.25')) return 'text-purple-400';
+    return 'text-gray-300'; // color por defecto
+  };
+
   async function fetchJobs() {
     try {
       const { data, error } = await supabase
@@ -296,11 +305,17 @@ export default function JobsList() {
                                         <div key={idx} className={`text-gray-300 ${getFontSizeClass()}`}>
                                           <div className="flex items-baseline gap-2">
                                             <span className="text-green-400 font-medium">{group.count} x </span>
-                                            <span>{group.description}</span>
+                                            <span className={getDescriptionColor(group.description)}>
+                                              {group.description}
+                                            </span>
                                           </div>
                                           <div className={`pl-4 ${getFontSizeClass(2)}`}>
-                                            <div className="text-gray-400">{inchesToFeetFormat(group.length)}</div>
-                                            <div className="text-gray-400">{group.length}″</div>
+                                            <div className={getDescriptionColor(group.description)}>
+                                              {inchesToFeetFormat(group.length)}
+                                            </div>
+                                            <div className={getDescriptionColor(group.description)}>
+                                              {group.length}″
+                                            </div>
                                           </div>
                                         </div>
                                       ))}
