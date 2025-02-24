@@ -11,11 +11,20 @@ export default function JobsList() {
   const [fontSize, setFontSize] = useState(3); // 1-5 para el tamaño de fuente
   const [loading, setLoading] = useState(true);
   const [availableTypes, setAvailableTypes] = useState([]);
-  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState(() => {
+    // Intentar cargar las preferencias guardadas
+    const saved = localStorage.getItem('selectedTypes');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
     fetchJobs();
   }, []);
+
+  // Guardar las preferencias cuando cambien
+  useEffect(() => {
+    localStorage.setItem('selectedTypes', JSON.stringify(selectedTypes));
+  }, [selectedTypes]);
 
   const toggleJob = (jobNumber) => {
     setExpandedJobs(prev => ({
@@ -96,7 +105,6 @@ export default function JobsList() {
     return Array.from(types).sort();
   };
 
-  // Función para manejar la selección de tipos
   const handleTypeToggle = (type) => {
     setSelectedTypes(prev => {
       if (prev.includes(type)) {
@@ -107,13 +115,12 @@ export default function JobsList() {
     });
   };
 
-  // Función para seleccionar/deseleccionar todos los tipos
   const handleSelectAllTypes = () => {
-    if (selectedTypes.length === availableTypes.length) {
-      setSelectedTypes([]);
-    } else {
-      setSelectedTypes([...availableTypes]);
-    }
+    setSelectedTypes([...availableTypes]);
+  };
+
+  const handleDeselectAllTypes = () => {
+    setSelectedTypes([]);
   };
 
   // Función para determinar el color según el material
@@ -128,20 +135,40 @@ export default function JobsList() {
     return 'text-gray-300'; // color por defecto
   };
 
-  // Función para obtener el resumen de studs
+  // Función para obtener el resumen de studs y sill seal
   const getStudsSummary = (members) => {
-    const studSummary = [];
+    const studSummary = new Set(); // Usar Set para evitar duplicados
+    let hasSillSeal = false;
+
     Object.entries(members).forEach(([type, groups]) => {
       if (type.toLowerCase().includes('stud')) {
         Object.values(groups).forEach(group => {
-          const dimension = group.description.match(/(2x\d+|3-1\/2X4|3\.5 x 11\.25)/i)?.[0] || '';
-          studSummary.push(
-            `<span class="${getDescriptionColor(dimension)}">${group.length}″ ${dimension}</span>`
-          );
+          // Convertir la longitud a número para comparar
+          const length = parseFloat(group.length.split(' ')[0]);
+          if (length >= 70) { // Solo incluir si es mayor o igual a 70 pulgadas
+            const dimension = group.description.match(/(2x\d+|3-1\/2X4|3\.5 x 11\.25)/i)?.[0] || '';
+            studSummary.add(
+              `<span class="${getDescriptionColor(dimension)}">${group.length}″ ${dimension}</span>`
+            );
+          }
+        });
+      }
+      // Verificar si hay Sill Seal en bottom plate
+      if (type.toLowerCase().includes('bottom plate')) {
+        Object.values(groups).forEach(group => {
+          if (group.description.toLowerCase().includes('sill seal')) {
+            hasSillSeal = true;
+          }
         });
       }
     });
-    return studSummary.join(', ');
+
+    let summary = Array.from(studSummary).join(', ');
+    if (hasSillSeal) {
+      summary += ' <span class="text-green-400">(+ SILL SEAL)</span>';
+    }
+    
+    return summary;
   };
 
   async function fetchJobs() {
@@ -204,7 +231,12 @@ export default function JobsList() {
       setJobs(jobsArray);
       const types = extractTypes(jobsArray);
       setAvailableTypes(types);
-      setSelectedTypes(types); // Inicialmente seleccionar todos los tipos
+      
+      // Si no hay tipos seleccionados (primera carga), seleccionar todos
+      if (selectedTypes.length === 0) {
+        setSelectedTypes(types);
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error('Error al cargar los trabajos:', error);
@@ -242,12 +274,20 @@ export default function JobsList() {
       <div className="mb-6 bg-gray-800/30 p-4 rounded-lg">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-white font-medium">Filtrar por tipo:</h3>
-          <button
-            onClick={handleSelectAllTypes}
-            className="text-green-500 hover:text-green-400 text-sm"
-          >
-            {selectedTypes.length === availableTypes.length ? 'Deseleccionar todo' : 'Seleccionar todo'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleSelectAllTypes}
+              className="text-green-500 hover:text-green-400 text-sm px-3 py-1 rounded-full bg-gray-800/50"
+            >
+              Seleccionar todo
+            </button>
+            <button
+              onClick={handleDeselectAllTypes}
+              className="text-red-500 hover:text-red-400 text-sm px-3 py-1 rounded-full bg-gray-800/50"
+            >
+              Deseleccionar todo
+            </button>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           {availableTypes.map(type => (
