@@ -171,6 +171,20 @@ export default function JobsList() {
     return summary;
   };
 
+  // Función para verificar si hay sill seal en un bundle
+  const hasSillSeal = (members) => {
+    for (const [type, groups] of Object.entries(members)) {
+      if (type.toLowerCase().includes('bottom_plate')) {
+        for (const group of Object.values(groups)) {
+          if (group.description.toLowerCase().includes('sill seal')) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  };
+
   async function fetchJobs() {
     try {
       const { data, error } = await supabase
@@ -322,6 +336,9 @@ export default function JobsList() {
                   {expandedJobs[job.jobNumber] ? <FiChevronDown className="text-green-500" /> : <FiChevronRight className="text-green-500" />}
                   <span className="text-white font-medium">{job.jobNumber}</span>
                   <span className="text-gray-400 text-sm">({job.bundles.length})</span>
+                  {job.bundles.some(bundle => hasSillSeal(bundle.members)) && 
+                    <span className="text-green-400 text-sm">(SILL SEAL)</span>
+                  }
                 </div>
               </button>
 
@@ -329,7 +346,6 @@ export default function JobsList() {
                 <div className="p-4 space-y-3">
                   {job.bundles
                     .sort((a, b) => {
-                      // Extraer números del nombre del bundle
                       const aNum = parseInt(a.name.match(/\d+/)?.[0] || 0);
                       const bNum = parseInt(b.name.match(/\d+/)?.[0] || 0);
                       return aNum - bNum;
@@ -343,6 +359,9 @@ export default function JobsList() {
                           <div className="flex items-center gap-2">
                             <FiPackage className="text-green-500" />
                             <span className="text-gray-300">{bundle.name}</span>
+                            {hasSillSeal(bundle.members) && 
+                              <span className="text-green-400 text-sm">(SILL SEAL)</span>
+                            }
                           </div>
                           <div 
                             className="text-sm text-left flex-1 ml-4"
