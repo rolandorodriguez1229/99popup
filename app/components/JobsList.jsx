@@ -1,21 +1,55 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { FiChevronDown, FiChevronRight, FiPackage, FiGrid } from 'react-icons/fi';
+import { FiChevronDown, FiChevronRight, FiPackage } from 'react-icons/fi';
 import { supabase } from '@/lib/supabase';
 
 export default function JobsList() {
   const [jobs, setJobs] = useState([]);
   const [expandedJobs, setExpandedJobs] = useState({});
   const [expandedBundles, setExpandedBundles] = useState({});
+  const [expandedTypes, setExpandedTypes] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchJobs();
   }, []);
 
+  const toggleJob = (jobNumber) => {
+    setExpandedJobs(prev => ({
+      ...prev,
+      [jobNumber]: !prev[jobNumber]
+    }));
+  };
+
+  const toggleBundle = (bundleId) => {
+    setExpandedBundles(prev => ({
+      ...prev,
+      [bundleId]: !prev[bundleId]
+    }));
+  };
+
+  const toggleType = (typeId) => {
+    setExpandedTypes(prev => ({
+      ...prev,
+      [typeId]: !prev[typeId]
+    }));
+  };
+
+  // Función para convertir decimales a fracciones en octavos
+  const decimalToFraction = (decimal) => {
+    const wholePart = Math.floor(decimal);
+    const decimalPart = decimal - wholePart;
+    const nearestEighth = Math.round(decimalPart * 8) / 8;
+    
+    if (nearestEighth === 0) return `${wholePart}`;
+    if (nearestEighth === 1) return `${wholePart + 1}`;
+    
+    const numerator = Math.round(nearestEighth * 8);
+    return `${wholePart} ${numerator}/8`;
+  };
+
   async function fetchJobs() {
     try {
-      // Obtener todos los bundles agrupados por job_number
       const { data, error } = await supabase
         .from('bundle99')
         .select(`
@@ -23,20 +57,16 @@ export default function JobsList() {
           job_number,
           bundle_name,
           members99 (
-            id,
-            type,
-            height,
-            width,
+            name,
+            description,
             length,
-            actual_height,
-            actual_width
+            type
           )
         `)
         .order('job_number', { ascending: false });
 
       if (error) throw error;
 
-      // Organizar los datos por trabajo
       const organizedJobs = data.reduce((acc, bundle) => {
         if (!acc[bundle.job_number]) {
           acc[bundle.job_number] = {
@@ -45,23 +75,20 @@ export default function JobsList() {
           };
         }
         
-        // Organizar miembros por tipo y medidas
         const organizedMembers = bundle.members99.reduce((memberAcc, member) => {
-          const type = member.type || 'Sin tipo';
-          const key = `${type}-${member.height}-${member.width}-${member.length}`;
+          const type = member.type || member.name || 'Sin tipo';
+          const description = member.description.trim();
+          const length = decimalToFraction(parseFloat(member.length));
+          const key = `${description} ${length}`;
           
           if (!memberAcc[type]) {
             memberAcc[type] = {};
           }
           if (!memberAcc[type][key]) {
             memberAcc[type][key] = {
-              type,
-              height: member.height,
-              width: member.width,
-              length: member.length,
-              count: 0,
-              actualHeight: member.actual_height,
-              actualWidth: member.actual_width
+              description,
+              length,
+              count: 0
             };
           }
           memberAcc[type][key].count++;
@@ -85,20 +112,6 @@ export default function JobsList() {
     }
   }
 
-  const toggleJob = (jobNumber) => {
-    setExpandedJobs(prev => ({
-      ...prev,
-      [jobNumber]: !prev[jobNumber]
-    }));
-  };
-
-  const toggleBundle = (bundleId) => {
-    setExpandedBundles(prev => ({
-      ...prev,
-      [bundleId]: !prev[bundleId]
-    }));
-  };
-
   return (
     <div className="glass-card rounded-2xl p-8 mt-8">
       <h2 className="text-2xl font-bold text-white mb-6">Trabajos Procesados</h2>
@@ -111,19 +124,17 @@ export default function JobsList() {
         <div className="space-y-4">
           {jobs.map(job => (
             <div key={job.jobNumber} className="border border-gray-700 rounded-lg overflow-hidden">
-              {/* Job Header */}
               <button
                 onClick={() => toggleJob(job.jobNumber)}
                 className="w-full px-4 py-3 bg-gray-800/50 flex items-center justify-between hover:bg-gray-800/70 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   {expandedJobs[job.jobNumber] ? <FiChevronDown className="text-green-500" /> : <FiChevronRight className="text-green-500" />}
-                  <span className="text-white font-medium">Trabajo #{job.jobNumber}</span>
-                  <span className="text-gray-400 text-sm">({job.bundles.length} bundles)</span>
+                  <span className="text-white font-medium">{job.jobNumber}</span>
+                  <span className="text-gray-400 text-sm">({job.bundles.length})</span>
                 </div>
               </button>
 
-              {/* Bundles List */}
               {expandedJobs[job.jobNumber] && (
                 <div className="p-4 space-y-3">
                   {job.bundles.map(bundle => (
@@ -136,36 +147,31 @@ export default function JobsList() {
                         <span className="text-gray-300">{bundle.name}</span>
                       </button>
 
-                      {/* Members by Type */}
                       {expandedBundles[bundle.id] && (
-                        <div className="p-4 space-y-4">
-                          {Object.entries(bundle.members).map(([type, members]) => (
-                            <div key={type} className="space-y-2">
-                              <h4 className="text-green-500 font-medium flex items-center gap-2">
-                                <FiGrid />
-                                {type}
-                              </h4>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                {Object.values(members).map((group, idx) => (
-                                  <div key={idx} className="bg-gray-800/30 p-3 rounded-lg">
-                                    <div className="text-gray-300 text-sm">
-                                      <span className="font-medium">{group.count}x</span> - 
-                                      {group.height && ` ${group.height}h`}
-                                      {group.width && ` ${group.width}w`}
-                                      {group.length && ` ${group.length}l`}
-                                    </div>
-                                    {(group.actualHeight || group.actualWidth) && (
-                                      <div className="text-gray-400 text-xs mt-1">
-                                        Actual: 
-                                        {group.actualHeight && ` ${group.actualHeight}h`}
-                                        {group.actualWidth && ` ${group.actualWidth}w`}
+                        <div className="p-4">
+                          <div className="grid grid-cols-3 gap-4">
+                            {Object.entries(bundle.members).map(([type, groups]) => (
+                              <div key={type} className="space-y-2">
+                                <button
+                                  onClick={() => toggleType(`${bundle.id}-${type}`)}
+                                  className="w-full flex items-center gap-2 text-green-500 font-medium text-lg border-b border-gray-700/50 pb-2"
+                                >
+                                  {expandedTypes[`${bundle.id}-${type}`] ? <FiChevronDown /> : <FiChevronRight />}
+                                  <span>{type}</span>
+                                </button>
+                                {expandedTypes[`${bundle.id}-${type}`] && (
+                                  <div className="space-y-1 pl-4">
+                                    {Object.values(groups).map((group, idx) => (
+                                      <div key={idx} className="text-gray-300 text-sm">
+                                        <span className="text-green-400 font-medium">{group.count} x </span>
+                                        <span>{group.description} {group.length}″</span>
                                       </div>
-                                    )}
+                                    ))}
                                   </div>
-                                ))}
+                                )}
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -178,4 +184,4 @@ export default function JobsList() {
       )}
     </div>
   );
-} 
+}
