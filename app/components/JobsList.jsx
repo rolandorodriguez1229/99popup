@@ -310,13 +310,10 @@ export default function JobsList() {
                                           <div className="flex items-baseline gap-2">
                                             <span className="text-green-400 font-medium">{group.count} x </span>
                                             <span className={getDescriptionColor(group.description)}>
-                                              {group.description}
+                                              {inchesToFeetFormat(group.length)} {group.description}
                                             </span>
                                           </div>
                                           <div className={`pl-4 ${getFontSizeClass(2)}`}>
-                                            <div className={getDescriptionColor(group.description)}>
-                                              {inchesToFeetFormat(group.length)}
-                                            </div>
                                             <div className={getDescriptionColor(group.description)}>
                                               {group.length}″
                                             </div>
