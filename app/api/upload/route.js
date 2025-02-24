@@ -5,36 +5,60 @@ export async function POST(req) {
   try {
     const formData = await req.formData();
     const file = formData.get('file');
+    const replaceExisting = formData.get('replaceExisting') === 'true';
     
     if (!file) {
       return new Response(JSON.stringify({ error: 'No file uploaded' }), { status: 400 });
     }
 
-    // Obtener el job number de la ruta del archivo
     const filePath = file.webkitRelativePath || file.name;
     const pathParts = filePath.split('/');
     const jobNumber = pathParts.length > 1 ? pathParts[pathParts.length - 2] : 'unknown';
     const fileName = pathParts[pathParts.length - 1];
+    const bundleName = fileName.replace('.xml', '');
 
-    console.log('📁 Procesando archivo:', fileName, 'del trabajo:', jobNumber);
-
-    // Primero crear el bundle
-    const { data: bundleData, error: bundleError } = await supabase
+    // Verificar si existe la combinación específica de trabajo y bundle
+    const { data: existingBundle, error: checkError } = await supabase
       .from('bundle99')
-      .insert({
-        job_number: jobNumber,
-        bundle_name: fileName.replace('.xml', '') // Eliminar la extensión .xml
-      })
-      .select()
+      .select('id')
+      .eq('job_number', jobNumber)
+      .eq('bundle_name', bundleName)
       .single();
 
-    if (bundleError) {
-      console.error('❌ Error al crear bundle:', bundleError);
-      return new Response(JSON.stringify({ error: bundleError.message }), { status: 500 });
+    if (checkError && checkError.code !== 'PGRST116') {
+      return new Response(JSON.stringify({ error: checkError.message }), { status: 500 });
     }
 
-    const bundleId = bundleData.id;
-    console.log('✅ Bundle creado con ID:', bundleId);
+    if (existingBundle && !replaceExisting) {
+      return new Response(JSON.stringify({ 
+        status: 'exists',
+        jobNumber: jobNumber,
+        bundleName: bundleName
+      }), { status: 409 });
+    }
+
+    // Si existe y queremos reemplazar, primero eliminamos los miembros asociados
+    if (existingBundle && replaceExisting) {
+      // Primero eliminamos los miembros asociados
+      const { error: deleteMembersError } = await supabase
+        .from('members99')
+        .delete()
+        .eq('bundle_id', existingBundle.id);
+
+      if (deleteMembersError) {
+        return new Response(JSON.stringify({ error: deleteMembersError.message }), { status: 500 });
+      }
+
+      // Luego eliminamos el bundle
+      const { error: deleteBundleError } = await supabase
+        .from('bundle99')
+        .delete()
+        .eq('id', existingBundle.id);
+
+      if (deleteBundleError) {
+        return new Response(JSON.stringify({ error: deleteBundleError.message }), { status: 500 });
+      }
+    }
 
     // Leer y parsear el XML
     const fileBuffer = await file.arrayBuffer();
@@ -51,13 +75,29 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'No MEMBER_DATA found in XML' }), { status: 400 });
     }
 
+    // Crear el nuevo bundle
+    const { data: bundleData, error: bundleError } = await supabase
+      .from('bundle99')
+      .insert({
+        job_number: jobNumber,
+        bundle_name: bundleName
+      })
+      .select()
+      .single();
+
+    if (bundleError) {
+      return new Response(JSON.stringify({ error: bundleError.message }), { status: 500 });
+    }
+
+    const bundleId = bundleData.id;
+
+    // Procesar los miembros
     const members = Array.isArray(fileData.MEMBER_DATA) 
       ? fileData.MEMBER_DATA 
       : [fileData.MEMBER_DATA];
 
-    // Transformar los datos e incluir el bundle_id
     const membersToInsert = members.map(member => ({
-      bundle_id: bundleId, // Agregar la referencia al bundle
+      bundle_id: bundleId,
       member_id: member.MEMBER_ID,
       type: member.TYPE,
       name: member.NAME,
@@ -70,14 +110,17 @@ export async function POST(req) {
       cut_member: member.CUT_MEMBER === 'YES'
     }));
 
-    // Insertar los miembros
-    const { data: membersData, error: membersError } = await supabase
+    const { error: membersError } = await supabase
       .from('members99')
-      .insert(membersToInsert)
-      .select();
+      .insert(membersToInsert);
 
     if (membersError) {
-      console.error('❌ Error al insertar miembros:', membersError);
+      // Si hay error al insertar miembros, eliminamos el bundle creado
+      await supabase
+        .from('bundle99')
+        .delete()
+        .eq('id', bundleId);
+        
       return new Response(JSON.stringify({ error: membersError.message }), { status: 500 });
     }
 
