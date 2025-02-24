@@ -8,7 +8,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from '@tanstack/react-table';
-import { FiUpload, FiEdit2, FiSave, FiX, FiFile } from 'react-icons/fi';
+import { FiUpload, FiEdit2, FiSave, FiX, FiFile, FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import FileUploader from './FileUploader';
 import { supabase } from '@/lib/supabase';
 
@@ -19,6 +19,8 @@ export default function ExcelTables() {
   const [editValue, setEditValue] = useState('');
   const [showXmlUploader, setShowXmlUploader] = useState(false);
   const [bundleMembers, setBundleMembers] = useState({});
+  const [expandedBundles, setExpandedBundles] = useState({});
+  const [expandedTypes, setExpandedTypes] = useState({});
 
   const decimalToFraction = (decimal) => {
     if (Number.isInteger(decimal)) return `${decimal}`;
@@ -267,6 +269,55 @@ export default function ExcelTables() {
     );
   };
 
+  const getMembersByType = (members) => {
+    return members.reduce((acc, member) => {
+      if (!acc[member.type]) {
+        acc[member.type] = [];
+      }
+      
+      // Buscar si ya existe un miembro igual
+      const existingMember = acc[member.type].find(m => 
+        m.length === member.length && 
+        m.description === member.description
+      );
+
+      if (existingMember) {
+        existingMember.count = (existingMember.count || 1) + 1;
+      } else {
+        acc[member.type].push({ ...member, count: 1 });
+      }
+      
+      return acc;
+    }, {});
+  };
+
+  const toggleBundle = (key) => {
+    setExpandedBundles(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const toggleType = (key) => {
+    setExpandedTypes(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const convertToFeetInches = (inches) => {
+    const feet = Math.floor(inches / 12);
+    const remainingInches = inches % 12;
+    const sixteenths = Math.round((remainingInches % 1) * 16);
+    const wholeInches = Math.floor(remainingInches);
+
+    let result = '';
+    if (feet > 0) result += `${feet}-`;
+    result += `${wholeInches}-${sixteenths}`;
+    
+    return result;
+  };
+
   const renderTable = (lineNumber) => {
     const data = lineNumber === 1 ? line1Data : line2Data;
     
@@ -293,21 +344,82 @@ export default function ExcelTables() {
                   const key = `${row.jobNumber}-${row.bundle}`;
                   const members = bundleMembers[key];
                   return (
-                    <tr key={index} className="hover:bg-gray-800/30">
-                      <td className="px-6 py-4 text-sm text-gray-300">{row.jobNumber}</td>
-                      <td className="px-6 py-4 text-sm">
-                        <div className="flex items-center gap-4">
-                          <span className="text-gray-300">{row.bundle}</span>
-                          {members && (
-                            <div 
-                              className="text-left flex-1"
-                              dangerouslySetInnerHTML={{ __html: getStudsSummary(members) }}
-                            />
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-300">{row.linealFeet}</td>
-                    </tr>
+                    <React.Fragment key={index}>
+                      <tr className="hover:bg-gray-800/30">
+                        <td className="px-6 py-4 text-sm text-gray-300">{row.jobNumber}</td>
+                        <td className="px-6 py-4 text-sm">
+                          <div className="flex items-center gap-4">
+                            {members ? (
+                              <button
+                                onClick={() => toggleBundle(key)}
+                                className="flex items-center gap-2 text-gray-300 hover:text-white"
+                              >
+                                {expandedBundles[key] ? 
+                                  <FiChevronDown className="text-green-500" /> : 
+                                  <FiChevronRight className="text-green-500" />
+                                }
+                                <span>{row.bundle}</span>
+                              </button>
+                            ) : (
+                              <span className="text-gray-300 ml-6">{row.bundle}</span>
+                            )}
+                            {members && (
+                              <div 
+                                className="text-left flex-1"
+                                dangerouslySetInnerHTML={{ __html: getStudsSummary(members) }}
+                              />
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-300">{row.linealFeet}</td>
+                      </tr>
+                      {expandedBundles[key] && members && (
+                        <tr>
+                          <td colSpan="3" className="px-6 py-4 bg-gray-800/30">
+                            <div className="pl-8">
+                              {Object.entries(getMembersByType(members)).map(([type, typeMembers]) => (
+                                <div key={type} className="mb-6 last:mb-0">
+                                  <button
+                                    onClick={() => toggleType(`${key}-${type}`)}
+                                    className="flex items-center gap-2 text-green-500 font-medium text-lg border-b border-gray-700/50 pb-2 w-full"
+                                  >
+                                    {expandedTypes[`${key}-${type}`] ? 
+                                      <FiChevronDown /> : 
+                                      <FiChevronRight />
+                                    }
+                                    <div className="flex items-center gap-2">
+                                      <div className="h-2 w-2 rounded-full bg-purple-500"></div>
+                                      <span className="text-gray-200">{type}</span>
+                                      <span className="text-gray-400">({typeMembers.length})</span>
+                                    </div>
+                                  </button>
+                                  {expandedTypes[`${key}-${type}`] && (
+                                    <div className="grid grid-cols-3 gap-x-6 gap-y-2 pl-4 mt-2">
+                                      {typeMembers.map((member, idx) => (
+                                        <div key={idx} className="text-gray-400 text-sm">
+                                          <div className="flex flex-col">
+                                            <div className="flex items-center gap-2">
+                                              <div className="h-1 w-1 rounded-full bg-gray-600"></div>
+                                              <span className="font-medium text-gray-300">{member.count} x</span>
+                                              <span className={getDescriptionColor(member.description)}>
+                                                {convertToFeetInches(parseFloat(member.length))} {member.description}
+                                              </span>
+                                            </div>
+                                            <div className="text-gray-400 pl-3">
+                                              {decimalToFraction(parseFloat(member.length))}″
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
