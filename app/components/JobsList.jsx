@@ -51,26 +51,19 @@ export default function JobsList() {
     return `${wholePart} ${numerator}/8`;
   };
 
-  // Función mejorada para convertir pulgadas a pies-pulgadas-dieciseisavos
+  // Función para convertir pulgadas a pies-pulgadas-dieciseisavos
   const inchesToFeetFormat = (inches) => {
-    // Convertir el string de pulgadas y fracciones a un número decimal
     let parts = inches.toString().split(' ');
     let totalInches = parseFloat(parts[0]);
     
-    // Si hay una fracción, agregarla al total
     if (parts.length > 1) {
       let fraction = parts[1].split('/');
       totalInches += parseInt(fraction[0]) / parseInt(fraction[1]);
     }
 
-    // Calcular pies
     const feet = Math.floor(totalInches / 12);
-    
-    // Calcular pulgadas restantes
     const remainingInches = totalInches % 12;
     const wholeInches = Math.floor(remainingInches);
-    
-    // Convertir la parte decimal a dieciseisavos
     const fractionalPart = remainingInches - wholeInches;
     const sixteenths = Math.round(fractionalPart * 16);
 
@@ -127,13 +120,28 @@ export default function JobsList() {
   const getDescriptionColor = (description) => {
     if (description.includes('2x4')) return 'text-yellow-400';
     if (description.includes('2x6')) return 'text-blue-400';
-    if (description.includes('4-3/8')) return 'text-red-400';
-    if (description.includes('7-1/4')) return 'text-orange-400';
+    if (description.includes('3-1/2X4')) return 'text-red-400';
     if (description.includes('3.5 x 11.25')) return 'text-purple-400';
     if (description.includes('2x12')) return 'text-pink-400';
     if (description.includes('2x8')) return 'text-cyan-400';
     if (description.includes('2x10')) return 'text-green-400';
     return 'text-gray-300'; // color por defecto
+  };
+
+  // Función para obtener el resumen de studs
+  const getStudsSummary = (members) => {
+    const studSummary = [];
+    Object.entries(members).forEach(([type, groups]) => {
+      if (type.toLowerCase().includes('stud')) {
+        Object.values(groups).forEach(group => {
+          const dimension = group.description.match(/(2x\d+|3-1\/2X4|3\.5 x 11\.25)/i)?.[0] || '';
+          studSummary.push(
+            `<span class="${getDescriptionColor(dimension)}">${group.length}″ ${dimension}</span>`
+          );
+        });
+      }
+    });
+    return studSummary.join(', ');
   };
 
   async function fetchJobs() {
@@ -279,56 +287,69 @@ export default function JobsList() {
 
               {expandedJobs[job.jobNumber] && (
                 <div className="p-4 space-y-3">
-                  {job.bundles.map(bundle => (
-                    <div key={bundle.id} className="border border-gray-700/50 rounded-lg">
-                      <button
-                        onClick={() => toggleBundle(bundle.id)}
-                        className="w-full px-4 py-2 flex items-center gap-2 hover:bg-gray-800/30 transition-colors rounded-lg"
-                      >
-                        <FiPackage className="text-green-500" />
-                        <span className="text-gray-300">{bundle.name}</span>
-                      </button>
+                  {job.bundles
+                    .sort((a, b) => {
+                      // Extraer números del nombre del bundle
+                      const aNum = parseInt(a.name.match(/\d+/)?.[0] || 0);
+                      const bNum = parseInt(b.name.match(/\d+/)?.[0] || 0);
+                      return aNum - bNum;
+                    })
+                    .map(bundle => (
+                      <div key={bundle.id} className="border border-gray-700/50 rounded-lg">
+                        <button
+                          onClick={() => toggleBundle(bundle.id)}
+                          className="w-full px-4 py-2 flex items-center justify-between hover:bg-gray-800/30 transition-colors rounded-lg"
+                        >
+                          <div className="flex items-center gap-2">
+                            <FiPackage className="text-green-500" />
+                            <span className="text-gray-300">{bundle.name}</span>
+                          </div>
+                          <div 
+                            className="text-sm text-left flex-1 ml-4"
+                            dangerouslySetInnerHTML={{ __html: getStudsSummary(bundle.members) }}
+                          />
+                        </button>
 
-                      {expandedBundles[bundle.id] && (
-                        <div className="p-4">
-                          <div className="grid grid-cols-3 gap-4">
-                            {Object.entries(bundle.members)
-                              .filter(([type]) => selectedTypes.includes(type))
-                              .map(([type, groups]) => (
-                                <div key={type} className="space-y-2">
-                                  <button
-                                    onClick={() => toggleType(`${bundle.id}-${type}`)}
-                                    className="w-full flex items-center gap-2 text-green-500 font-medium text-lg border-b border-gray-700/50 pb-2"
-                                  >
-                                    {expandedTypes[`${bundle.id}-${type}`] ? <FiChevronDown /> : <FiChevronRight />}
-                                    <span>{type}</span>
-                                  </button>
-                                  {expandedTypes[`${bundle.id}-${type}`] && (
-                                    <div className="space-y-1 pl-4">
-                                      {Object.values(groups).map((group, idx) => (
-                                        <div key={idx} className={`text-gray-300 ${getFontSizeClass()}`}>
-                                          <div className="flex items-baseline gap-2">
-                                            <span className="text-green-400 font-medium">{group.count} x </span>
-                                            <span className={getDescriptionColor(group.description)}>
-                                              {inchesToFeetFormat(group.length)} {group.description}
-                                            </span>
-                                          </div>
-                                          <div className={`pl-4 ${getFontSizeClass(2)}`}>
-                                            <div className={getDescriptionColor(group.description)}>
-                                              {group.length}″
+                        {expandedBundles[bundle.id] && (
+                          <div className="p-4">
+                            <div className="grid grid-cols-3 gap-4">
+                              {Object.entries(bundle.members)
+                                .filter(([type]) => selectedTypes.includes(type))
+                                .map(([type, groups]) => (
+                                  <div key={type} className="space-y-2">
+                                    <button
+                                      onClick={() => toggleType(`${bundle.id}-${type}`)}
+                                      className="w-full flex items-center gap-2 text-green-500 font-medium text-lg border-b border-gray-700/50 pb-2"
+                                    >
+                                      {expandedTypes[`${bundle.id}-${type}`] ? <FiChevronDown /> : <FiChevronRight />}
+                                      <span>{type}</span>
+                                    </button>
+                                    {expandedTypes[`${bundle.id}-${type}`] && (
+                                      <div className="space-y-1 pl-4">
+                                        {Object.values(groups).map((group, idx) => (
+                                          <div key={idx} className={`text-gray-300 ${getFontSizeClass()}`}>
+                                            <div className="flex items-baseline gap-2">
+                                              <span className="text-green-400 font-medium">{group.count} x </span>
+                                              <span className={getDescriptionColor(group.description)}>
+                                                {inchesToFeetFormat(group.length)} {group.description}
+                                              </span>
+                                            </div>
+                                            <div className={`pl-4 ${getFontSizeClass(2)}`}>
+                                              <div className={getDescriptionColor(group.description)}>
+                                                {group.length}″
+                                              </div>
                                             </div>
                                           </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        )}
+                      </div>
+                    ))}
                 </div>
               )}
             </div>
