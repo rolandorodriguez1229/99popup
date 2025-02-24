@@ -10,6 +10,8 @@ export default function JobsList() {
   const [expandedTypes, setExpandedTypes] = useState({});
   const [fontSize, setFontSize] = useState(3); // 1-5 para el tamaño de fuente
   const [loading, setLoading] = useState(true);
+  const [availableTypes, setAvailableTypes] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState([]);
 
   useEffect(() => {
     fetchJobs();
@@ -88,6 +90,39 @@ export default function JobsList() {
     return sizes[adjustedSize] || 'text-base';
   };
 
+  // Función para extraer todos los tipos únicos de los trabajos
+  const extractTypes = (jobsData) => {
+    const types = new Set();
+    jobsData.forEach(job => {
+      job.bundles.forEach(bundle => {
+        Object.keys(bundle.members).forEach(type => {
+          types.add(type);
+        });
+      });
+    });
+    return Array.from(types).sort();
+  };
+
+  // Función para manejar la selección de tipos
+  const handleTypeToggle = (type) => {
+    setSelectedTypes(prev => {
+      if (prev.includes(type)) {
+        return prev.filter(t => t !== type);
+      } else {
+        return [...prev, type];
+      }
+    });
+  };
+
+  // Función para seleccionar/deseleccionar todos los tipos
+  const handleSelectAllTypes = () => {
+    if (selectedTypes.length === availableTypes.length) {
+      setSelectedTypes([]);
+    } else {
+      setSelectedTypes([...availableTypes]);
+    }
+  };
+
   async function fetchJobs() {
     try {
       const { data, error } = await supabase
@@ -144,7 +179,11 @@ export default function JobsList() {
         return acc;
       }, {});
 
-      setJobs(Object.values(organizedJobs));
+      const jobsArray = Object.values(organizedJobs);
+      setJobs(jobsArray);
+      const types = extractTypes(jobsArray);
+      setAvailableTypes(types);
+      setSelectedTypes(types); // Inicialmente seleccionar todos los tipos
       setLoading(false);
     } catch (error) {
       console.error('Error al cargar los trabajos:', error);
@@ -156,22 +195,53 @@ export default function JobsList() {
     <div className="glass-card rounded-2xl p-8 mt-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-white">Trabajos Procesados</h2>
-        <div className="flex items-center gap-3 bg-gray-800/50 rounded-lg p-2">
+        <div className="flex items-center gap-4">
+          {/* Control de tamaño de fuente */}
+          <div className="flex items-center gap-3 bg-gray-800/50 rounded-lg p-2">
+            <button
+              onClick={() => setFontSize(prev => Math.max(1, prev - 1))}
+              className="text-green-500 hover:text-green-400 disabled:text-gray-500"
+              disabled={fontSize <= 1}
+            >
+              <FiMinus size={20} />
+            </button>
+            <span className="text-white min-w-[1.5rem] text-center">{fontSize}</span>
+            <button
+              onClick={() => setFontSize(prev => Math.min(5, prev + 1))}
+              className="text-green-500 hover:text-green-400 disabled:text-gray-500"
+              disabled={fontSize >= 5}
+            >
+              <FiPlus size={20} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Filtro de tipos */}
+      <div className="mb-6 bg-gray-800/30 p-4 rounded-lg">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-white font-medium">Filtrar por tipo:</h3>
           <button
-            onClick={() => setFontSize(prev => Math.max(1, prev - 1))}
-            className="text-green-500 hover:text-green-400 disabled:text-gray-500"
-            disabled={fontSize <= 1}
+            onClick={handleSelectAllTypes}
+            className="text-green-500 hover:text-green-400 text-sm"
           >
-            <FiMinus size={20} />
+            {selectedTypes.length === availableTypes.length ? 'Deseleccionar todo' : 'Seleccionar todo'}
           </button>
-          <span className="text-white min-w-[1.5rem] text-center">{fontSize}</span>
-          <button
-            onClick={() => setFontSize(prev => Math.min(5, prev + 1))}
-            className="text-green-500 hover:text-green-400 disabled:text-gray-500"
-            disabled={fontSize >= 5}
-          >
-            <FiPlus size={20} />
-          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {availableTypes.map(type => (
+            <button
+              key={type}
+              onClick={() => handleTypeToggle(type)}
+              className={`px-3 py-1 rounded-full text-sm ${
+                selectedTypes.includes(type)
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-700 text-gray-300'
+              }`}
+            >
+              {type}
+            </button>
+          ))}
         </div>
       </div>
       
@@ -209,33 +279,35 @@ export default function JobsList() {
                       {expandedBundles[bundle.id] && (
                         <div className="p-4">
                           <div className="grid grid-cols-3 gap-4">
-                            {Object.entries(bundle.members).map(([type, groups]) => (
-                              <div key={type} className="space-y-2">
-                                <button
-                                  onClick={() => toggleType(`${bundle.id}-${type}`)}
-                                  className="w-full flex items-center gap-2 text-green-500 font-medium text-lg border-b border-gray-700/50 pb-2"
-                                >
-                                  {expandedTypes[`${bundle.id}-${type}`] ? <FiChevronDown /> : <FiChevronRight />}
-                                  <span>{type}</span>
-                                </button>
-                                {expandedTypes[`${bundle.id}-${type}`] && (
-                                  <div className="space-y-1 pl-4">
-                                    {Object.values(groups).map((group, idx) => (
-                                      <div key={idx} className={`text-gray-300 ${getFontSizeClass()}`}>
-                                        <div className="flex items-baseline gap-2">
-                                          <span className="text-green-400 font-medium">{group.count} x </span>
-                                          <span>{group.description}</span>
+                            {Object.entries(bundle.members)
+                              .filter(([type]) => selectedTypes.includes(type))
+                              .map(([type, groups]) => (
+                                <div key={type} className="space-y-2">
+                                  <button
+                                    onClick={() => toggleType(`${bundle.id}-${type}`)}
+                                    className="w-full flex items-center gap-2 text-green-500 font-medium text-lg border-b border-gray-700/50 pb-2"
+                                  >
+                                    {expandedTypes[`${bundle.id}-${type}`] ? <FiChevronDown /> : <FiChevronRight />}
+                                    <span>{type}</span>
+                                  </button>
+                                  {expandedTypes[`${bundle.id}-${type}`] && (
+                                    <div className="space-y-1 pl-4">
+                                      {Object.values(groups).map((group, idx) => (
+                                        <div key={idx} className={`text-gray-300 ${getFontSizeClass()}`}>
+                                          <div className="flex items-baseline gap-2">
+                                            <span className="text-green-400 font-medium">{group.count} x </span>
+                                            <span>{group.description}</span>
+                                          </div>
+                                          <div className={`pl-4 ${getFontSizeClass(2)}`}>
+                                            <div className="text-gray-400">{inchesToFeetFormat(group.length)}</div>
+                                            <div className="text-gray-400">{group.length}″</div>
+                                          </div>
                                         </div>
-                                        <div className={`pl-4 ${getFontSizeClass(2)}`}>
-                                          <div className="text-gray-400">{group.length}″</div>
-                                          <div className="text-gray-400">{inchesToFeetFormat(group.length)}</div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
                           </div>
                         </div>
                       )}
