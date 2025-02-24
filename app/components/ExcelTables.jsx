@@ -8,7 +8,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from '@tanstack/react-table';
-import { FiUpload, FiEdit2, FiSave, FiX, FiFile, FiChevronDown, FiChevronRight } from 'react-icons/fi';
+import { FiUpload, FiEdit2, FiSave, FiX, FiFile, FiChevronDown, FiChevronRight, FiFilter } from 'react-icons/fi';
 import FileUploader from './FileUploader';
 import { supabase } from '@/lib/supabase';
 
@@ -21,6 +21,55 @@ export default function ExcelTables() {
   const [bundleMembers, setBundleMembers] = useState({});
   const [expandedBundles, setExpandedBundles] = useState({});
   const [expandedTypes, setExpandedTypes] = useState({});
+  const [expandedFilters, setExpandedFilters] = useState({});
+  const [availableTypes, setAvailableTypes] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState(() => {
+    const saved = localStorage.getItem('selectedTypes');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('selectedTypes', JSON.stringify(selectedTypes));
+  }, [selectedTypes]);
+
+  useEffect(() => {
+    // Actualizar tipos disponibles cuando cambian los datos
+    const updateAvailableTypes = () => {
+      const types = new Set();
+      Object.values(bundleMembers).forEach(members => {
+        members.forEach(member => {
+          if (member.type) types.add(member.type);
+        });
+      });
+      setAvailableTypes(Array.from(types).sort());
+    };
+    updateAvailableTypes();
+  }, [bundleMembers]);
+
+  const toggleFilters = (lineNumber) => {
+    setExpandedFilters(prev => ({
+      ...prev,
+      [lineNumber]: !prev[lineNumber]
+    }));
+  };
+
+  const handleTypeSelect = (type) => {
+    setSelectedTypes(prev => {
+      if (prev.includes(type)) {
+        return prev.filter(t => t !== type);
+      } else {
+        return [...prev, type];
+      }
+    });
+  };
+
+  const handleSelectAllTypes = () => {
+    setSelectedTypes(availableTypes);
+  };
+
+  const handleDeselectAllTypes = () => {
+    setSelectedTypes([]);
+  };
 
   const decimalToFraction = (decimal) => {
     if (Number.isInteger(decimal)) return `${decimal}`;
@@ -255,7 +304,7 @@ export default function ExcelTables() {
 
     return (
       <div className="flex items-center justify-between group">
-        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        <span>{cell.getValue()}</span>
         <button
           onClick={() => {
             setEditingCell({ row: cell.row.index, column: cell.column.id, line: lineNumber });
@@ -318,6 +367,56 @@ export default function ExcelTables() {
     return result;
   };
 
+  const renderFiltersPanel = (lineNumber) => {
+    return (
+      <div className="mb-4">
+        <button
+          onClick={() => toggleFilters(lineNumber)}
+          className="flex items-center gap-2 text-gray-200 hover:text-white bg-gray-800/50 px-4 py-2 rounded-lg w-full"
+        >
+          <FiFilter />
+          <span>Filtros</span>
+          {expandedFilters[lineNumber] ? <FiChevronDown /> : <FiChevronRight />}
+        </button>
+        {expandedFilters[lineNumber] && (
+          <div className="mt-2 p-4 bg-gray-800/30 rounded-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-gray-300">Tipos de miembros:</h4>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSelectAllTypes}
+                  className="text-sm text-blue-400 hover:text-blue-300"
+                >
+                  Seleccionar todos
+                </button>
+                <span className="text-gray-600">|</span>
+                <button
+                  onClick={handleDeselectAllTypes}
+                  className="text-sm text-blue-400 hover:text-blue-300"
+                >
+                  Deseleccionar todos
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {availableTypes.map(type => (
+                <label key={type} className="flex items-center gap-2 text-gray-400">
+                  <input
+                    type="checkbox"
+                    checked={selectedTypes.includes(type)}
+                    onChange={() => handleTypeSelect(type)}
+                    className="rounded bg-gray-700 border-gray-600"
+                  />
+                  {type}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderTable = (lineNumber) => {
     const data = lineNumber === 1 ? line1Data : line2Data;
     
@@ -326,6 +425,8 @@ export default function ExcelTables() {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-white">Línea {lineNumber}</h2>
         </div>
+
+        {renderFiltersPanel(lineNumber)}
 
         {data.length > 0 && (
           <div className="overflow-x-auto">
@@ -371,50 +472,60 @@ export default function ExcelTables() {
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-300">{row.linealFeet}</td>
+                        <td className="px-6 py-4 text-sm text-gray-300">
+                          {renderCell({ 
+                            getValue: () => row.linealFeet,
+                            row: { index },
+                            column: { id: 'linealFeet' }
+                          }, lineNumber)}
+                        </td>
                       </tr>
                       {expandedBundles[key] && members && (
                         <tr>
                           <td colSpan="3" className="px-6 py-4 bg-gray-800/30">
                             <div className="pl-8">
-                              {Object.entries(getMembersByType(members)).map(([type, typeMembers]) => (
-                                <div key={type} className="mb-6 last:mb-0">
-                                  <button
-                                    onClick={() => toggleType(`${key}-${type}`)}
-                                    className="flex items-center gap-2 text-green-500 font-medium text-lg border-b border-gray-700/50 pb-2 w-full"
-                                  >
-                                    {expandedTypes[`${key}-${type}`] ? 
-                                      <FiChevronDown /> : 
-                                      <FiChevronRight />
-                                    }
-                                    <div className="flex items-center gap-2">
-                                      <div className="h-2 w-2 rounded-full bg-purple-500"></div>
-                                      <span className="text-gray-200">{type}</span>
-                                      <span className="text-gray-400">({typeMembers.length})</span>
-                                    </div>
-                                  </button>
-                                  {expandedTypes[`${key}-${type}`] && (
-                                    <div className="grid grid-cols-3 gap-x-6 gap-y-2 pl-4 mt-2">
-                                      {typeMembers.map((member, idx) => (
-                                        <div key={idx} className="text-gray-400 text-sm">
-                                          <div className="flex flex-col">
-                                            <div className="flex items-center gap-2">
-                                              <div className="h-1 w-1 rounded-full bg-gray-600"></div>
-                                              <span className="font-medium text-gray-300">{member.count} x</span>
-                                              <span className={getDescriptionColor(member.description)}>
-                                                {convertToFeetInches(parseFloat(member.length))} {member.description}
-                                              </span>
-                                            </div>
-                                            <div className="text-gray-400 pl-3">
-                                              {decimalToFraction(parseFloat(member.length))}″
+                              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                                {Object.entries(getMembersByType(members))
+                                  .filter(([type]) => selectedTypes.length === 0 || selectedTypes.includes(type))
+                                  .map(([type, typeMembers]) => (
+                                  <div key={type} className="mb-6 last:mb-0">
+                                    <button
+                                      onClick={() => toggleType(`${key}-${type}`)}
+                                      className="flex items-center gap-2 text-green-500 font-medium text-lg border-b border-gray-700/50 pb-2 w-full"
+                                    >
+                                      {expandedTypes[`${key}-${type}`] ? 
+                                        <FiChevronDown /> : 
+                                        <FiChevronRight />
+                                      }
+                                      <div className="flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-purple-500"></div>
+                                        <span className="text-gray-200">{type}</span>
+                                        <span className="text-gray-400">({typeMembers.length})</span>
+                                      </div>
+                                    </button>
+                                    {expandedTypes[`${key}-${type}`] && (
+                                      <div className="grid grid-cols-2 gap-x-6 gap-y-2 pl-4 mt-2">
+                                        {typeMembers.map((member, idx) => (
+                                          <div key={idx} className="text-gray-400 text-sm">
+                                            <div className="flex flex-col">
+                                              <div className="flex items-center gap-2">
+                                                <div className="h-1 w-1 rounded-full bg-gray-600"></div>
+                                                <span className="font-medium text-gray-300">{member.count} x</span>
+                                                <span className={getDescriptionColor(member.description)}>
+                                                  {convertToFeetInches(parseFloat(member.length))} {member.description}
+                                                </span>
+                                              </div>
+                                              <div className="text-gray-400 pl-3">
+                                                {decimalToFraction(parseFloat(member.length))}″
+                                              </div>
                                             </div>
                                           </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           </td>
                         </tr>
