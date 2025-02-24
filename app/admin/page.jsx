@@ -1,8 +1,9 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { FiArrowLeft, FiChevronDown, FiChevronRight, FiUpload } from 'react-icons/fi';
+import { FiArrowLeft, FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import JobsList from '@/components/JobsList';
+import ExcelTables from '@/components/ExcelTables';
 
 export default function Admin() {
   const router = useRouter();
@@ -35,25 +36,9 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* Panel de Subida de Trabajos */}
-        <div className="glass-card rounded-2xl p-6 mb-8">
-          <h2 className="text-xl font-semibold text-white mb-6">Subir Trabajos</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button
-              onClick={() => {/* Función para subir trabajos línea 1 */}}
-              className="flex items-center justify-center gap-2 p-4 rounded-xl bg-blue-500 hover:bg-blue-600 text-white transition-colors"
-            >
-              <FiUpload />
-              <span>Subir Trabajos Línea 1</span>
-            </button>
-            <button
-              onClick={() => {/* Función para subir trabajos línea 2 */}}
-              className="flex items-center justify-center gap-2 p-4 rounded-xl bg-purple-500 hover:bg-purple-600 text-white transition-colors"
-            >
-              <FiUpload />
-              <span>Subir Trabajos Línea 2</span>
-            </button>
-          </div>
+        {/* Tablas de Excel */}
+        <div className="mb-8">
+          <ExcelTables />
         </div>
 
         {/* Panel de Lista de Trabajos Colapsable */}
