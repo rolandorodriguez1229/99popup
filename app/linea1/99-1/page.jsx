@@ -2,7 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { FiArrowLeft } from 'react-icons/fi';
 
-export default function Linea1() {
+export default function 991() {
   const router = useRouter();
   const buttons = [
     { name: '99#1', path: '/99-1' },
