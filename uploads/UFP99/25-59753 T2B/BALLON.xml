@@ -1,0 +1,891 @@
+<?xml version="1.0"?>
+<!DOCTYPE VIRTEK_BUILDING_MATERIAL_MARKUP_LANGUAGE_FILE SYSTEM "WallPanel.dtd">
+    <VIRTEK_BUILDING_MATERIAL_MARKUP_LANGUAGE_FILE>
+            <HEADER_DATA>
+                <SENDING_PROGRAM>ShopNet-4/3/2024</SENDING_PROGRAM>
+                <CUT> 50 28 29 30 6 47 67 21 24 48 22 23 49 1 14 26 56 61 15 40 41 2 62 3 27 57 51 52 53 5 7 8 9 10 11 12 13 17 66 72 105 106 </CUT>
+                <MARK_LOCATION></MARK_LOCATION>
+                <MARK_ME></MARK_ME>
+                <COMPANY>MESSAGE</COMPANY>
+                <AUTHOR>SHOPNET</AUTHOR>
+                <DATE>2/21/2025</DATE>
+                <TIME>4:29:56 PM</TIME>
+                <JOB_NAME></JOB_NAME>
+                <CUSTOMER></CUSTOMER>
+                <ADDRESS></ADDRESS>
+                <JOB_SITE></JOB_SITE>
+            </HEADER_DATA>
+                <STRUCTURE_DATA>
+                    <STRUCTURE_ID>4</STRUCTURE_ID>
+                    <MEMBER_QTY>22</MEMBER_QTY>
+                    <MEMBERS>
+                        <MEMBER_ID>4,A_1</MEMBER_ID>
+                        <MEMBER_ID>4,L_2</MEMBER_ID>
+                        <MEMBER_ID>4,D_3</MEMBER_ID>
+                        <MEMBER_ID>4,E_4</MEMBER_ID>
+                        <MEMBER_ID>4,J_5</MEMBER_ID>
+                        <MEMBER_ID>4,J_6</MEMBER_ID>
+                        <MEMBER_ID>4,E_7</MEMBER_ID>
+                        <MEMBER_ID>4,D_8</MEMBER_ID>
+                        <MEMBER_ID>4,M_9</MEMBER_ID>
+                        <MEMBER_ID>4,M_10</MEMBER_ID>
+                        <MEMBER_ID>4,M_11</MEMBER_ID>
+                        <MEMBER_ID>4,L_12</MEMBER_ID>
+                        <MEMBER_ID>4,I_13</MEMBER_ID>
+                        <MEMBER_ID>4,I_14</MEMBER_ID>
+                        <MEMBER_ID>4,H_15</MEMBER_ID>
+                        <MEMBER_ID>4,F_16</MEMBER_ID>
+                        <MEMBER_ID>4,F_17</MEMBER_ID>
+                        <MEMBER_ID>4,F_18</MEMBER_ID>
+                        <MEMBER_ID>4,K_19</MEMBER_ID>
+                        <MEMBER_ID>4,K_20</MEMBER_ID>
+                        <MEMBER_ID>4,B_21</MEMBER_ID>
+                        <MEMBER_ID>4,C_22</MEMBER_ID>
+                    </MEMBERS>
+                    <EXTERIOR>NO</EXTERIOR>
+                    <LOAD_BEARING>YES</LOAD_BEARING>
+                    <PO_NUMBER>0</PO_NUMBER>
+                    <SHEATHING></SHEATHING>
+                    <SHEATHING_NUM>0</SHEATHING_NUM>
+                    <SHEATHING_QTY>0</SHEATHING_QTY>
+                    <PANEL_HEIGHT>17-3-8</PANEL_HEIGHT>
+                    <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                    <BUNDLE_LAYER>1</BUNDLE_LAYER>
+                    <CUTTABLE_LENGTH></CUTTABLE_LENGTH>
+                </STRUCTURE_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,A_1</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>BOTTOM_PLATE</TYPE>
+                    <NAME>BottomPlate</NAME>
+                    <DESCRIPTION>2x6 SP No.3 P</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">96.0000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608136</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,L_2</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>STUD</TYPE>
+                    <NAME>Stud</NAME>
+                    <DESCRIPTION>2x6 SPF Stud</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">204.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608137</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,D_3</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>KING</TYPE>
+                    <NAME>KingStud</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">204.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608140</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,E_4</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>JACK</TYPE>
+                    <NAME>Trimmer</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">194.3750</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608141</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,J_5</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>Sill Cripple</TYPE>
+                    <NAME>SillCripple</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">132.8750</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608154</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,J_6</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>Sill Cripple</TYPE>
+                    <NAME>SillCripple</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">132.8750</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608156</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,E_7</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>JACK</TYPE>
+                    <NAME>Trimmer</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">194.3750</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608159</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,D_8</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>KING</TYPE>
+                    <NAME>KingStud</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">204.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608160</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,M_9</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>STUD</TYPE>
+                    <NAME>Stud</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">204.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608142</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,M_10</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>STUD</TYPE>
+                    <NAME>Stud</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">204.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608143</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,M_11</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>STUD</TYPE>
+                    <NAME>Stud</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">204.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608144</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,L_12</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>STUD</TYPE>
+                    <NAME>Stud</NAME>
+                    <DESCRIPTION>2x6 SPF Stud</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">204.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608145</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,I_13</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>Sill Cripple</TYPE>
+                    <NAME>SillCripple</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">6.0000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608151</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,I_14</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>Sill Cripple</TYPE>
+                    <NAME>SillCripple</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">6.0000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608158</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,H_15</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>Sill</TYPE>
+                    <NAME>WindowSill</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">36.0000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608152</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,F_16</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>Header</TYPE>
+                    <NAME>Header</NAME>
+                    <DESCRIPTION>2x6 SP No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">39.0000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608146</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,F_17</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>Header</TYPE>
+                    <NAME>Header</NAME>
+                    <DESCRIPTION>2x6 SP No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">39.0000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608148</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,F_18</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>Header</TYPE>
+                    <NAME>Header</NAME>
+                    <DESCRIPTION>2x6 SP No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">39.0000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608150</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,K_19</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>Hdr Cripple</TYPE>
+                    <NAME>HeaderCripple</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">4.6250</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608155</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,K_20</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>Hdr Cripple</TYPE>
+                    <NAME>HeaderCripple</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">4.6250</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608157</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,B_21</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>TOP_PLATE</TYPE>
+                    <NAME>TopPlate</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">96.0000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608138</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>4,C_22</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>VERY_TOP_PLATE</TYPE>
+                    <NAME>VeryTopPlate</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">48.0000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608139</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <STRUCTURE_DATA>
+                    <STRUCTURE_ID>3</STRUCTURE_ID>
+                    <MEMBER_QTY>7</MEMBER_QTY>
+                    <MEMBERS>
+                        <MEMBER_ID>3,A_1</MEMBER_ID>
+                        <MEMBER_ID>3,D_2</MEMBER_ID>
+                        <MEMBER_ID>3,E_3</MEMBER_ID>
+                        <MEMBER_ID>3,F_4</MEMBER_ID>
+                        <MEMBER_ID>3,F_5</MEMBER_ID>
+                        <MEMBER_ID>3,B_6</MEMBER_ID>
+                        <MEMBER_ID>3,C_7</MEMBER_ID>
+                    </MEMBERS>
+                    <EXTERIOR>NO</EXTERIOR>
+                    <LOAD_BEARING>YES</LOAD_BEARING>
+                    <PO_NUMBER>0</PO_NUMBER>
+                    <SHEATHING></SHEATHING>
+                    <SHEATHING_NUM>0</SHEATHING_NUM>
+                    <SHEATHING_QTY>0</SHEATHING_QTY>
+                    <PANEL_HEIGHT>17-3-8</PANEL_HEIGHT>
+                    <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                    <BUNDLE_LAYER>2</BUNDLE_LAYER>
+                    <CUTTABLE_LENGTH></CUTTABLE_LENGTH>
+                </STRUCTURE_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>3,A_1</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>BOTTOM_PLATE</TYPE>
+                    <NAME>BottomPlate</NAME>
+                    <DESCRIPTION>2x6 SP No.3 P</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">28.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608161</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>3,D_2</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>STUD</TYPE>
+                    <NAME>Stud</NAME>
+                    <DESCRIPTION>2x6 SPF Stud</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">204.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608162</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>3,E_3</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>STUD</TYPE>
+                    <NAME>Stud</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">204.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608164</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>3,F_4</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>STUD</TYPE>
+                    <NAME>CriticalStud</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">204.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608165</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>3,F_5</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>STUD</TYPE>
+                    <NAME>CriticalStud</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">204.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608166</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>3,B_6</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>TOP_PLATE</TYPE>
+                    <NAME>TopPlate</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">28.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608163</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+                <MEMBER_DATA>
+                    <MEMBER_ID>3,C_7</MEMBER_ID>
+                    <CUT_MEMBER>YES</CUT_MEMBER>
+                    <TYPE>VERY_TOP_PLATE</TYPE>
+                    <NAME>VeryTopPlate</NAME>
+                    <DESCRIPTION>2x6 SPF No.2</DESCRIPTION>
+                    <HEIGHT UNITS="IMPERIAL">2</HEIGHT>
+                    <WIDTH UNITS="IMPERIAL">6</WIDTH>
+                    <ACTUAL_HEIGHT UNITS="IMPERIAL">1.5</ACTUAL_HEIGHT>
+                    <ACTUAL_WIDTH UNITS="IMPERIAL">5.5</ACTUAL_WIDTH>
+                    <LENGTH UNITS="IMPERIAL">3.5000</LENGTH>
+                    <START_CUT_ANG>.00</START_CUT_ANG>
+                    <END_CUT_ANG>.00</END_CUT_ANG>
+                     <IS_RAKED_WALL>N</IS_RAKED_WALL>
+                     <UNIQUE_ID>85608167</UNIQUE_ID>
+                    <SIDE_1_NUM_ATTACH>0</SIDE_1_NUM_ATTACH>
+                    <SIDE_2_NUM_ATTACH>0</SIDE_2_NUM_ATTACH>
+                    <SIDE_3_NUM_ATTACH>0</SIDE_3_NUM_ATTACH>
+                    <SIDE_4_NUM_ATTACH>0</SIDE_4_NUM_ATTACH>
+                    <SIDE_1_NUM_LABELS>0</SIDE_1_NUM_LABELS>
+                    <SIDE_2_NUM_LABELS>0</SIDE_2_NUM_LABELS>
+                    <SIDE_3_NUM_LABELS>0</SIDE_3_NUM_LABELS>
+                    <SIDE_4_NUM_LABELS>0</SIDE_4_NUM_LABELS>
+                    <SIDE_1_NUM_MARKINGS>0</SIDE_1_NUM_MARKINGS>
+                    <SIDE_2_NUM_MARKINGS>0</SIDE_2_NUM_MARKINGS>
+                    <SIDE_3_NUM_MARKINGS>0</SIDE_3_NUM_MARKINGS>
+                    <SIDE_4_NUM_MARKINGS>0</SIDE_4_NUM_MARKINGS>
+                </MEMBER_DATA>
+        </VIRTEK_BUILDING_MATERIAL_MARKUP_LANGUAGE_FILE>
