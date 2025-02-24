@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { FiChevronDown, FiChevronRight, FiPackage } from 'react-icons/fi';
+import { FiChevronDown, FiChevronRight, FiPackage, FiMinus, FiPlus } from 'react-icons/fi';
 import { supabase } from '@/lib/supabase';
 
 export default function JobsList() {
@@ -8,6 +8,7 @@ export default function JobsList() {
   const [expandedJobs, setExpandedJobs] = useState({});
   const [expandedBundles, setExpandedBundles] = useState({});
   const [expandedTypes, setExpandedTypes] = useState({});
+  const [fontSize, setFontSize] = useState(3); // 1-5 para el tamaño de fuente
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,6 +47,30 @@ export default function JobsList() {
     
     const numerator = Math.round(nearestEighth * 8);
     return `${wholePart} ${numerator}/8`;
+  };
+
+  // Función para convertir pulgadas a pies-pulgadas-dieciseisavos
+  const inchesToFeetFormat = (inches) => {
+    const totalInches = parseFloat(inches);
+    const feet = Math.floor(totalInches / 12);
+    const remainingInches = totalInches % 12;
+    const wholePart = Math.floor(remainingInches);
+    const fraction = remainingInches - wholePart;
+    const sixteenths = Math.round(fraction * 16);
+    
+    return `${feet}-${wholePart}-${sixteenths}`;
+  };
+
+  // Función para obtener la clase de tamaño de fuente
+  const getFontSizeClass = () => {
+    const sizes = {
+      1: 'text-xs',
+      2: 'text-sm',
+      3: 'text-base',
+      4: 'text-lg',
+      5: 'text-xl'
+    };
+    return sizes[fontSize] || 'text-base';
   };
 
   async function fetchJobs() {
@@ -114,7 +139,26 @@ export default function JobsList() {
 
   return (
     <div className="glass-card rounded-2xl p-8 mt-8">
-      <h2 className="text-2xl font-bold text-white mb-6">Trabajos Procesados</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-white">Trabajos Procesados</h2>
+        <div className="flex items-center gap-3 bg-gray-800/50 rounded-lg p-2">
+          <button
+            onClick={() => setFontSize(prev => Math.max(1, prev - 1))}
+            className="text-green-500 hover:text-green-400 disabled:text-gray-500"
+            disabled={fontSize <= 1}
+          >
+            <FiMinus size={20} />
+          </button>
+          <span className="text-white min-w-[1.5rem] text-center">{fontSize}</span>
+          <button
+            onClick={() => setFontSize(prev => Math.min(5, prev + 1))}
+            className="text-green-500 hover:text-green-400 disabled:text-gray-500"
+            disabled={fontSize >= 5}
+          >
+            <FiPlus size={20} />
+          </button>
+        </div>
+      </div>
       
       {loading ? (
         <div className="flex items-center justify-center p-8">
@@ -162,9 +206,13 @@ export default function JobsList() {
                                 {expandedTypes[`${bundle.id}-${type}`] && (
                                   <div className="space-y-1 pl-4">
                                     {Object.values(groups).map((group, idx) => (
-                                      <div key={idx} className="text-gray-300 text-sm">
+                                      <div key={idx} className={`text-gray-300 ${getFontSizeClass()}`}>
                                         <span className="text-green-400 font-medium">{group.count} x </span>
-                                        <span>{group.description} {group.length}″</span>
+                                        <span>{group.description}</span>
+                                        <div className="text-gray-400 pl-4">
+                                          <div>″: {group.length}″</div>
+                                          <div>′: {inchesToFeetFormat(group.length)}</div>
+                                        </div>
                                       </div>
                                     ))}
                                   </div>
