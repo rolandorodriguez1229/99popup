@@ -8,13 +8,15 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from '@tanstack/react-table';
-import { FiUpload, FiEdit2, FiSave, FiX } from 'react-icons/fi';
+import { FiUpload, FiEdit2, FiSave, FiX, FiFile } from 'react-icons/fi';
+import FileUploader from './FileUploader';
 
 export default function ExcelTables() {
   const [line1Data, setLine1Data] = useState([]);
   const [line2Data, setLine2Data] = useState([]);
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [showXmlUploader, setShowXmlUploader] = useState(false);
 
   const columns = [
     {
@@ -156,27 +158,28 @@ export default function ExcelTables() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Tabla Línea 1 */}
-      <div className="glass-card rounded-xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white">Línea 1</h3>
-          <label className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg cursor-pointer transition-colors">
+    <div className="container mx-auto p-4">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Línea 1</h2>
+        <div className="flex gap-4 mb-4">
+          <label className="flex items-center gap-2 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
             <FiUpload />
             <span>Subir Excel</span>
             <input
               type="file"
-              accept=".xlsx,.xls"
               className="hidden"
-              onChange={(e) => {
-                if (e.target.files[0]) {
-                  handleFileUpload(e.target.files[0], 1);
-                }
-              }}
+              accept=".xlsx,.xls"
+              onChange={(e) => handleFileUpload(e.target.files[0], 1)}
             />
           </label>
+          <button
+            onClick={() => setShowXmlUploader(true)}
+            className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded"
+          >
+            <FiFile />
+            <span>Subir XML</span>
+          </button>
         </div>
-
         {line1Data.length > 0 && (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -207,26 +210,27 @@ export default function ExcelTables() {
         )}
       </div>
 
-      {/* Tabla Línea 2 */}
-      <div className="glass-card rounded-xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white">Línea 2</h3>
-          <label className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg cursor-pointer transition-colors">
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Línea 2</h2>
+        <div className="flex gap-4 mb-4">
+          <label className="flex items-center gap-2 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
             <FiUpload />
             <span>Subir Excel</span>
             <input
               type="file"
-              accept=".xlsx,.xls"
               className="hidden"
-              onChange={(e) => {
-                if (e.target.files[0]) {
-                  handleFileUpload(e.target.files[0], 2);
-                }
-              }}
+              accept=".xlsx,.xls"
+              onChange={(e) => handleFileUpload(e.target.files[0], 2)}
             />
           </label>
+          <button
+            onClick={() => setShowXmlUploader(true)}
+            className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded"
+          >
+            <FiFile />
+            <span>Subir XML</span>
+          </button>
         </div>
-
         {line2Data.length > 0 && (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -256,6 +260,23 @@ export default function ExcelTables() {
           </div>
         )}
       </div>
+
+      {showXmlUploader && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-lg w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-white">Subir carpeta de archivos XML</h3>
+              <button
+                onClick={() => setShowXmlUploader(false)}
+                className="text-gray-400 hover:text-gray-200"
+              >
+                <FiX size={24} />
+              </button>
+            </div>
+            <FileUploader />
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
