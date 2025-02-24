@@ -49,12 +49,19 @@ export default function JobsList() {
     return `${wholePart} ${numerator}/8`;
   };
 
-  // Función para convertir pulgadas a pies-pulgadas-dieciseisavos
+  // Función mejorada para convertir pulgadas a pies-pulgadas-dieciseisavos
   const inchesToFeetFormat = (inches) => {
+    // Convertir a número decimal
     const totalInches = parseFloat(inches);
+    
+    // Calcular pies
     const feet = Math.floor(totalInches / 12);
+    
+    // Calcular pulgadas restantes
     const remainingInches = totalInches % 12;
     const wholePart = Math.floor(remainingInches);
+    
+    // Convertir la parte decimal a dieciseisavos
     const fraction = remainingInches - wholePart;
     const sixteenths = Math.round(fraction * 16);
     
@@ -62,7 +69,7 @@ export default function JobsList() {
   };
 
   // Función para obtener la clase de tamaño de fuente
-  const getFontSizeClass = () => {
+  const getFontSizeClass = (reduction = 0) => {
     const sizes = {
       1: 'text-xs',
       2: 'text-sm',
@@ -70,7 +77,8 @@ export default function JobsList() {
       4: 'text-lg',
       5: 'text-xl'
     };
-    return sizes[fontSize] || 'text-base';
+    const adjustedSize = Math.max(1, fontSize - reduction);
+    return sizes[adjustedSize] || 'text-base';
   };
 
   async function fetchJobs() {
@@ -207,11 +215,13 @@ export default function JobsList() {
                                   <div className="space-y-1 pl-4">
                                     {Object.values(groups).map((group, idx) => (
                                       <div key={idx} className={`text-gray-300 ${getFontSizeClass()}`}>
-                                        <span className="text-green-400 font-medium">{group.count} x </span>
-                                        <span>{group.description}</span>
-                                        <div className="text-gray-400 pl-4">
-                                          <div>″: {group.length}″</div>
-                                          <div>′: {inchesToFeetFormat(group.length)}</div>
+                                        <div className="flex items-baseline gap-2">
+                                          <span className="text-green-400 font-medium">{group.count} x </span>
+                                          <span>{group.description}</span>
+                                        </div>
+                                        <div className={`pl-4 ${getFontSizeClass(2)}`}>
+                                          <div className="text-gray-400">{group.length}″</div>
+                                          <div className="text-gray-400">{inchesToFeetFormat(group.length)}</div>
                                         </div>
                                       </div>
                                     ))}
