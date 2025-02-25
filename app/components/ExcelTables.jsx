@@ -23,26 +23,40 @@ export default function ExcelTables() {
   const [expandedTypes, setExpandedTypes] = useState({});
   const [expandedFilters, setExpandedFilters] = useState({});
   const [availableTypes, setAvailableTypes] = useState([]);
-  const [selectedTypes, setSelectedTypes] = useState(() => {
-    const saved = localStorage.getItem('selectedTypes');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  
+  // Inicializar los tipos seleccionados desde localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('selectedTypes');
+      if (saved) setSelectedTypes(JSON.parse(saved));
+    }
+  }, []);
   const [isLoading, setIsLoading] = useState(false);
   // Historial de acciones para la función de deshacer
   const [actionHistory, setActionHistory] = useState([]);
   // Control de tamaño de fuente (1-5)
-  const [fontSize, setFontSize] = useState(() => {
-    const saved = localStorage.getItem('tableFontSize');
-    return saved ? parseInt(saved) : 3;
-  });
+  const [fontSize, setFontSize] = useState(3);
+  
+  // Inicializar el tamaño de fuente desde localStorage una vez que estamos en el cliente
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('tableFontSize');
+      if (saved) setFontSize(parseInt(saved));
+    }
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem('selectedTypes', JSON.stringify(selectedTypes));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedTypes', JSON.stringify(selectedTypes));
+    }
   }, [selectedTypes]);
   
   // Guardar el tamaño de la fuente en localStorage
   useEffect(() => {
-    localStorage.setItem('tableFontSize', fontSize.toString());
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('tableFontSize', fontSize.toString());
+    }
   }, [fontSize]);
 
   useEffect(() => {
