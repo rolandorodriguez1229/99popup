@@ -8,7 +8,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from '@tanstack/react-table';
-import { FiUpload, FiEdit2, FiSave, FiX, FiFile, FiChevronDown, FiChevronRight, FiFilter, FiSearch, FiTrash2, FiRotateCcw } from 'react-icons/fi';
+import { FiUpload, FiEdit2, FiSave, FiX, FiFile, FiChevronDown, FiChevronRight, FiFilter, FiSearch, FiTrash2, FiRotateCcw, FiShare, FiPlus, FiMinus } from 'react-icons/fi';
 import FileUploader from './FileUploader';
 import { supabase } from '@/lib/supabase';
 
@@ -30,10 +30,20 @@ export default function ExcelTables() {
   const [isLoading, setIsLoading] = useState(false);
   // Historial de acciones para la función de deshacer
   const [actionHistory, setActionHistory] = useState([]);
+  // Control de tamaño de fuente (1-5)
+  const [fontSize, setFontSize] = useState(() => {
+    const saved = localStorage.getItem('tableFontSize');
+    return saved ? parseInt(saved) : 3;
+  });
 
   useEffect(() => {
     localStorage.setItem('selectedTypes', JSON.stringify(selectedTypes));
   }, [selectedTypes]);
+  
+  // Guardar el tamaño de la fuente en localStorage
+  useEffect(() => {
+    localStorage.setItem('tableFontSize', fontSize.toString());
+  }, [fontSize]);
 
   useEffect(() => {
     // Actualizar tipos disponibles cuando cambian los datos
@@ -126,8 +136,12 @@ export default function ExcelTables() {
           );
         }
       }
-      if (member.type?.toLowerCase().includes('bottom plate') && 
-          member.description?.toLowerCase().includes('sill seal')) {
+      
+      // Comprobar si hay sill seal - ampliado para incluir más casos
+      if ((member.type?.toLowerCase().includes('bottom plate') || 
+           member.type?.toLowerCase().includes('bottom_plate')) && 
+          (member.description?.toLowerCase().includes('sill seal') ||
+           member.description?.toLowerCase().includes('sill_seal'))) {
         hasSillSeal = true;
       }
     });
@@ -137,6 +151,18 @@ export default function ExcelTables() {
       summary += ' <span class="text-green-400">(+ SILL SEAL)</span>';
     }
     return summary;
+  };
+  
+  // Función para verificar si un grupo de miembros contiene sill seal
+  const hasSillSeal = (members) => {
+    if (!members) return false;
+    
+    return members.some(member => 
+      (member.type?.toLowerCase().includes('bottom plate') || 
+       member.type?.toLowerCase().includes('bottom_plate')) && 
+      (member.description?.toLowerCase().includes('sill seal') ||
+       member.description?.toLowerCase().includes('sill_seal'))
+    );
   };
 
   const fetchBundleMembers = async (jobNumber, bundleName) => {
@@ -318,6 +344,65 @@ export default function ExcelTables() {
     }
   };
   
+  // Función para enviar datos a la línea correspondiente
+  const assignToLine = async (lineNumber) => {
+    setIsLoading(true);
+    try {
+      const tableData = lineNumber === 1 ? line1Data : line2Data;
+      
+      // Preparar datos completos incluyendo miembros
+      const completeData = tableData.map(row => {
+        const key = `${row.jobNumber}-${row.bundle}`;
+        return {
+          jobNumber: row.jobNumber,
+          bundle: row.bundle,
+          linealFeet: row.linealFeet,
+          members: bundleMembers[key] || [],
+          hasSillSeal: bundleMembers[key] ? hasSillSeal(bundleMembers[key]) : false,
+          studsSummary: bundleMembers[key] ? getStudsSummary(bundleMembers[key]) : "",
+          lineNumber: lineNumber,
+          date: new Date().toISOString().split('T')[0], // Fecha actual en formato YYYY-MM-DD
+          completed: false,
+          stations: ["99", "popup", "ventanas", "mesa"].map(station => ({
+            name: station,
+            completed: false,
+            completedAt: null
+          }))
+        };
+      });
+      
+      // Guardar en Supabase en una nueva tabla llamada 'line_assignments'
+      for (const item of completeData) {
+        const { error } = await supabase
+          .from('line_assignments')
+          .insert({
+            job_number: item.jobNumber,
+            bundle: item.bundle,
+            lineal_feet: item.linealFeet,
+            members_data: item.members,
+            has_sill_seal: item.hasSillSeal,
+            studs_summary: item.studsSummary,
+            line_number: item.lineNumber,
+            assignment_date: item.date,
+            completed: item.completed,
+            stations: item.stations
+          });
+        
+        if (error) {
+          console.error('Error al guardar asignación:', error);
+          throw error;
+        }
+      }
+      
+      alert(`¡Datos enviados exitosamente a Línea ${lineNumber}!`);
+    } catch (error) {
+      console.error('Error al asignar a línea:', error);
+      alert('Error al enviar datos a la línea. Por favor intente nuevamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Función para deshacer la última acción
   const handleUndo = () => {
     if (actionHistory.length === 0) return;
@@ -482,9 +567,44 @@ export default function ExcelTables() {
     return result;
   };
 
+  // Función para obtener la clase de tamaño de fuente
+  const getFontSizeClass = (reduction = 0) => {
+    const sizes = {
+      1: 'text-xs',
+      2: 'text-sm',
+      3: 'text-base',
+      4: 'text-lg',
+      5: 'text-xl'
+    };
+    const adjustedSize = Math.max(1, fontSize - reduction);
+    return sizes[adjustedSize] || 'text-base';
+  };
+
   const renderFiltersPanel = (lineNumber) => {
     return (
       <div className="mb-4">
+        <div className="flex flex-col md:flex-row gap-4 mb-4">
+          {/* Control de tamaño de fuente */}
+          <div className="flex items-center gap-3 bg-gray-800/50 rounded-lg p-2">
+            <span className="text-gray-300 mr-2">Tamaño de texto:</span>
+            <button
+              onClick={() => setFontSize(prev => Math.max(1, prev - 1))}
+              className="text-green-500 hover:text-green-400 disabled:text-gray-500"
+              disabled={fontSize <= 1}
+            >
+              <FiMinus size={20} />
+            </button>
+            <span className="text-white min-w-[1.5rem] text-center">{fontSize}</span>
+            <button
+              onClick={() => setFontSize(prev => Math.min(5, prev + 1))}
+              className="text-green-500 hover:text-green-400 disabled:text-gray-500"
+              disabled={fontSize >= 5}
+            >
+              <FiPlus size={20} />
+            </button>
+          </div>
+        </div>
+        
         <button
           onClick={() => toggleFilters(lineNumber)}
           className="flex items-center gap-2 text-gray-200 hover:text-white bg-gray-800/50 px-4 py-2 rounded-lg w-full"
@@ -557,10 +677,12 @@ export default function ExcelTables() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-700/50">
+              <tbody className={`divide-y divide-gray-700/50 ${getFontSizeClass()}`}>
                 {data.map((row, index) => {
                   const key = `${row.jobNumber}-${row.bundle}`;
                   const members = bundleMembers[key];
+                  const hasSillSealFlag = members ? hasSillSeal(members) : false;
+                  
                   return (
                     <React.Fragment key={index}>
                       <tr className="hover:bg-gray-800/30">
@@ -573,7 +695,12 @@ export default function ExcelTables() {
                             <FiTrash2 size={16} />
                           </button>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-300">{row.jobNumber}</td>
+                        <td className="px-6 py-4 text-gray-300">
+                          <div className="flex items-center gap-2">
+                            <span>{row.jobNumber}</span>
+                            {hasSillSealFlag && <span className="text-green-400 text-sm">(SILL SEAL)</span>}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 text-sm">
                           <div className="flex items-center gap-4">
                             {members ? (
@@ -664,7 +791,7 @@ export default function ExcelTables() {
           </div>
         )}
 
-        <div className="flex gap-4 mt-6">
+        <div className="flex flex-wrap gap-4 mt-6">
           <label className="flex items-center gap-2 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors">
             <FiUpload />
             <span>Subir Excel</span>
@@ -683,6 +810,18 @@ export default function ExcelTables() {
             <FiSearch />
             <span>Buscar coincidencias</span>
           </button>
+          
+          {/* Botón para enviar a línea */}
+          {(lineNumber === 1 ? line1Data.length > 0 : line2Data.length > 0) && (
+            <button
+              onClick={() => assignToLine(lineNumber)}
+              className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition-colors"
+              disabled={isLoading}
+            >
+              <FiShare className="transform -rotate-90" />
+              <span>Enviar a línea {lineNumber}</span>
+            </button>
+          )}
         </div>
       </div>
     );
