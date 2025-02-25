@@ -16,15 +16,22 @@ export default function StationView({
   const [expandedTypes, setExpandedTypes] = useState({});
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [availableDates, setAvailableDates] = useState([]);
-  const [fontSize, setFontSize] = useState(() => {
-    const saved = localStorage.getItem('stationFontSize');
-    return saved ? parseInt(saved) : 3;
-  });
+  const [fontSize, setFontSize] = useState(3);
+  
+  // Inicializar el tamaño de fuente desde localStorage una vez que estamos en el cliente
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('stationFontSize');
+      if (saved) setFontSize(parseInt(saved));
+    }
+  }, []);
   const [showCompletedJobs, setShowCompletedJobs] = useState(false);
 
   // Guardar tamaño de fuente en localStorage
   useEffect(() => {
-    localStorage.setItem('stationFontSize', fontSize.toString());
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('stationFontSize', fontSize.toString());
+    }
   }, [fontSize]);
 
   // Cargar los datos de asignaciones
