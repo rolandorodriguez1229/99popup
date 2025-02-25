@@ -825,11 +825,19 @@ export default function ExcelTables() {
             <span>Buscar coincidencias</span>
           </button>
           
+          <button
+            onClick={() => setShowXmlUploader(true)}
+            className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition-colors"
+          >
+            <FiFile />
+            <span>Subir XML</span>
+          </button>
+          
           {/* Botón para enviar a línea */}
           {(lineNumber === 1 ? line1Data.length > 0 : line2Data.length > 0) && (
             <button
               onClick={() => assignToLine(lineNumber)}
-              className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition-colors"
+              className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition-colors"
               disabled={isLoading}
             >
               <FiShare className="transform -rotate-90" />
