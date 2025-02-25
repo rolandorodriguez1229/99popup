@@ -8,7 +8,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from '@tanstack/react-table';
-import { FiUpload, FiEdit2, FiSave, FiX, FiFile, FiChevronDown, FiChevronRight, FiFilter } from 'react-icons/fi';
+import { FiUpload, FiEdit2, FiSave, FiX, FiFile, FiChevronDown, FiChevronRight, FiFilter, FiSearch } from 'react-icons/fi';
 import FileUploader from './FileUploader';
 import { supabase } from '@/lib/supabase';
 
@@ -27,6 +27,7 @@ export default function ExcelTables() {
     const saved = localStorage.getItem('selectedTypes');
     return saved ? JSON.parse(saved) : [];
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('selectedTypes', JSON.stringify(selectedTypes));
@@ -156,17 +157,49 @@ export default function ExcelTables() {
     return members;
   };
 
+  // Modificación clave: ahora esta función mantiene los datos existentes
   const loadBundleMembers = async (data) => {
-    const newBundleMembers = {};
+    setIsLoading(true);
+    // Preserva los datos existentes copiando el estado actual
+    const newBundleMembers = { ...bundleMembers };
+    
     for (const row of data) {
-      const members = await fetchBundleMembers(row.jobNumber, row.bundle);
-      if (members) {
-        newBundleMembers[`${row.jobNumber}-${row.bundle}`] = members;
+      const key = `${row.jobNumber}-${row.bundle}`;
+      
+      // Solo busca miembros si no existen ya en el estado
+      if (!newBundleMembers[key]) {
+        const members = await fetchBundleMembers(row.jobNumber, row.bundle);
+        if (members) {
+          newBundleMembers[key] = members;
+        }
       }
     }
+    
     setBundleMembers(newBundleMembers);
+    setIsLoading(false);
   };
 
+  // Esta función busca coincidencias para todas las tablas cargadas
+  const searchAllMatches = async () => {
+    setIsLoading(true);
+    const allData = [...line1Data, ...line2Data];
+    const newBundleMembers = { ...bundleMembers };
+    
+    for (const row of allData) {
+      const key = `${row.jobNumber}-${row.bundle}`;
+      const members = await fetchBundleMembers(row.jobNumber, row.bundle);
+      if (members) {
+        newBundleMembers[key] = members;
+      }
+    }
+    
+    setBundleMembers(newBundleMembers);
+    setIsLoading(false);
+  };
+
+  // Ya no necesitamos estos efectos individuales que sobrescriben datos
+  // Los mantendré comentados para referencia
+  /*
   useEffect(() => {
     if (line1Data.length > 0) {
       loadBundleMembers(line1Data);
@@ -178,6 +211,7 @@ export default function ExcelTables() {
       loadBundleMembers(line2Data);
     }
   }, [line2Data]);
+  */
 
   const columns = [
     {
@@ -550,11 +584,12 @@ export default function ExcelTables() {
             />
           </label>
           <button
-            onClick={() => setShowXmlUploader(true)}
-            className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition-colors"
+            onClick={() => loadBundleMembers(lineNumber === 1 ? line1Data : line2Data)}
+            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors"
+            disabled={isLoading || (lineNumber === 1 ? !line1Data.length : !line2Data.length)}
           >
-            <FiFile />
-            <span>Subir XML</span>
+            <FiSearch />
+            <span>Buscar coincidencias</span>
           </button>
         </div>
       </div>
@@ -563,6 +598,29 @@ export default function ExcelTables() {
 
   return (
     <div className="container mx-auto p-4">
+      {/* Botón global de búsqueda */}
+      {(line1Data.length > 0 || line2Data.length > 0) && (
+        <div className="mb-6 flex justify-center">
+          <button
+            onClick={searchAllMatches}
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg text-lg font-medium transition-colors shadow-lg"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                <span>Buscando coincidencias...</span>
+              </>
+            ) : (
+              <>
+                <FiSearch />
+                <span>Buscar coincidencias para todas las tablas</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+      
       {renderTable(1)}
       {renderTable(2)}
       {showXmlUploader && (
@@ -583,4 +641,4 @@ export default function ExcelTables() {
       )}
     </div>
   );
-} 
+}
