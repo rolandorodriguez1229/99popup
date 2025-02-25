@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiArrowLeft, FiChevronDown, FiChevronRight, FiCheckSquare, FiFilter, FiClock, FiPackage, FiCalendar, FiMinus, FiPlus } from 'react-icons/fi';
+import { FiArrowLeft, FiChevronDown, FiChevronRight, FiCheckSquare, FiFilter, FiClock, FiPackage, FiCalendar, FiMinus, FiPlus, FiRefreshCw } from 'react-icons/fi';
 import { supabase } from '@/lib/supabase';
 
 export default function StationView({ 
@@ -17,11 +17,14 @@ export default function StationView({
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [availableDates, setAvailableDates] = useState([]);
   const [fontSize, setFontSize] = useState(3);
-  const [showCompletedJobs, setShowCompletedJobs] = useState(false);
   // Declarar las variables de estado faltantes
   const [availableTypes, setAvailableTypes] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [expandedFilters, setExpandedFilters] = useState(false);
+  // Datos de resumen
+  const [completedFeet, setCompletedFeet] = useState(0);
+  const [pendingFeet, setPendingFeet] = useState(0);
+  const [totalFeet, setTotalFeet] = useState(0);
   
   // Inicializar el tamaño de fuente desde localStorage una vez que estamos en el cliente
   useEffect(() => {
@@ -59,7 +62,7 @@ export default function StationView({
   useEffect(() => {
     fetchAssignments();
     fetchAvailableDates();
-  }, [stationName, lineNumber, selectedDate, showCompletedJobs]);
+  }, [stationName, lineNumber, selectedDate]);
   
   // Extraer todos los tipos de miembros disponibles
   useEffect(() => {
@@ -79,8 +82,33 @@ export default function StationView({
       if (!selectedTypes || selectedTypes.length === 0) {
         setSelectedTypes(typesArray);
       }
+      
+      // Calcular los pies completados y pendientes
+      calculateTotals(assignments);
     }
   }, [assignments]);
+
+  // Función para calcular los totales de pies lineales
+  const calculateTotals = (assignments) => {
+    let completed = 0;
+    let pending = 0;
+    let total = 0;
+    
+    assignments.forEach(assignment => {
+      const linealFeet = parseFloat(assignment.lineal_feet) || 0;
+      total += linealFeet;
+      
+      if (isStationCompleted(assignment)) {
+        completed += linealFeet;
+      } else {
+        pending += linealFeet;
+      }
+    });
+    
+    setCompletedFeet(completed);
+    setPendingFeet(pending);
+    setTotalFeet(total);
+  };
 
   // Función para alternar selección de tipo
   const handleTypeSelect = (type) => {
@@ -132,18 +160,12 @@ export default function StationView({
   const fetchAssignments = async () => {
     setLoading(true);
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('line_assignments')
         .select('*')
         .eq('line_number', lineNumber)
-        .eq('assignment_date', selectedDate);
-      
-      if (!showCompletedJobs) {
-        // Filtrar para mostrar solo trabajos pendientes para esta estación
-        query = query.contains(`stations`, [{ name: stationName.toLowerCase(), completed: false }]);
-      }
-      
-      const { data, error } = await query.order('job_number');
+        .eq('assignment_date', selectedDate)
+        .order('job_number');
       
       if (error) throw error;
       
@@ -168,29 +190,71 @@ export default function StationView({
     }
   };
 
+  // Encontrar la última completada para calcular tiempo
+  const findLastCompletedTime = () => {
+    // Si no hay asignaciones completadas, usar 6:00 AM
+    const today = new Date(selectedDate);
+    today.setHours(6, 0, 0, 0);
+    
+    const completed = assignments
+      .filter(a => {
+        const station = a.stations?.find(s => s.name.toLowerCase() === stationName.toLowerCase());
+        return station?.completed && station?.completedAt;
+      })
+      .map(a => {
+        const station = a.stations.find(s => s.name.toLowerCase() === stationName.toLowerCase());
+        return new Date(station.completedAt);
+      })
+      .sort((a, b) => b - a); // Ordenar descendiente
+
+    return completed.length > 0 ? completed[0] : today;
+  };
+
   // Función para marcar un trabajo como completado en esta estación
-  const markStationCompleted = async (assignmentId) => {
+  const toggleStationCompletion = async (assignmentId) => {
     try {
       // Primero, obtener la asignación actual
       const { data: currentAssignment, error: fetchError } = await supabase
         .from('line_assignments')
-        .select('stations')
+        .select('*')
         .eq('id', assignmentId)
         .single();
       
       if (fetchError) throw fetchError;
       
-      // Actualizar el estado de la estación específica
-      const updatedStations = currentAssignment.stations.map(station => {
-        if (station.name.toLowerCase() === stationName.toLowerCase()) {
-          return {
-            ...station,
-            completed: true,
-            completedAt: new Date().toISOString()
-          };
-        }
-        return station;
-      });
+      // Encontrar la estación específica
+      const stationIndex = currentAssignment.stations.findIndex(s => 
+        s.name.toLowerCase() === stationName.toLowerCase()
+      );
+      
+      if (stationIndex === -1) throw new Error("Estación no encontrada");
+      
+      const updatedStations = [...currentAssignment.stations];
+      const isCurrentlyCompleted = updatedStations[stationIndex].completed;
+      
+      if (!isCurrentlyCompleted) {
+        // Si no está completada, marcarla como completada
+        const lastCompletedTime = findLastCompletedTime();
+        const now = new Date();
+        const minutesDiff = Math.floor((now - lastCompletedTime) / (1000 * 60));
+        
+        updatedStations[stationIndex] = {
+          ...updatedStations[stationIndex],
+          completed: true,
+          completedAt: now.toISOString(),
+          previousCompletedAt: lastCompletedTime.toISOString(),
+          timeTaken: minutesDiff
+        };
+      } else {
+        // Si ya está completada, deshacer
+        updatedStations[stationIndex] = {
+          ...updatedStations[stationIndex],
+          completed: false,
+          completedAt: null,
+          previousCompletedAt: null,
+          timeTaken: null
+        };
+      }
       
       // Guardar los cambios
       const { error: updateError } = await supabase
@@ -203,7 +267,7 @@ export default function StationView({
       // Actualizar la UI
       fetchAssignments();
     } catch (error) {
-      console.error('Error al marcar como completado:', error);
+      console.error('Error al actualizar estado:', error);
       alert('Error al actualizar estado. Por favor intente nuevamente.');
     }
   };
@@ -217,6 +281,25 @@ export default function StationView({
     );
     
     return station?.completed || false;
+  };
+
+  // Función para obtener la información de tiempo completado
+  const getCompletionInfo = (assignment) => {
+    if (!assignment.stations) return null;
+    
+    const station = assignment.stations.find(s => 
+      s.name.toLowerCase() === stationName.toLowerCase()
+    );
+    
+    if (!station || !station.completed) return null;
+    
+    const completedAt = new Date(station.completedAt);
+    const timeTaken = station.timeTaken !== undefined ? station.timeTaken : 0;
+    
+    return {
+      time: completedAt.toLocaleTimeString(),
+      duration: timeTaken
+    };
   };
 
   // Función para obtener la clase de tamaño de fuente
@@ -345,6 +428,28 @@ export default function StationView({
           <h1 className="text-3xl font-bold text-white">{title}</h1>
         </div>
         
+        {/* Resumen de pies lineales */}
+        <div className="glass-card rounded-2xl p-6 mb-6">
+          <h2 className="text-xl font-bold text-white mb-4">Resumen de Producción</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-green-900/30 p-4 rounded-lg">
+              <div className="text-green-400 text-sm font-medium mb-1">Completados</div>
+              <div className="text-2xl font-bold text-white">{completedFeet.toFixed(2)} pies</div>
+              <div className="text-gray-400 text-sm">{((completedFeet / totalFeet) * 100).toFixed(1)}% del total</div>
+            </div>
+            <div className="bg-blue-900/30 p-4 rounded-lg">
+              <div className="text-blue-400 text-sm font-medium mb-1">Pendientes</div>
+              <div className="text-2xl font-bold text-white">{pendingFeet.toFixed(2)} pies</div>
+              <div className="text-gray-400 text-sm">{((pendingFeet / totalFeet) * 100).toFixed(1)}% del total</div>
+            </div>
+            <div className="bg-purple-900/30 p-4 rounded-lg">
+              <div className="text-purple-400 text-sm font-medium mb-1">Total Asignado</div>
+              <div className="text-2xl font-bold text-white">{totalFeet.toFixed(2)} pies</div>
+              <div className="text-gray-400 text-sm">{assignments.length} trabajos</div>
+            </div>
+          </div>
+        </div>
+        
         {/* Filtros y controles */}
         <div className="glass-card rounded-2xl p-6 mb-6">
           <div className="flex flex-wrap items-center gap-4 mb-4">
@@ -369,17 +474,6 @@ export default function StationView({
                 )}
               </select>
             </div>
-            
-            {/* Control de mostrar completados */}
-            <label className="flex items-center gap-2 text-gray-300">
-              <input
-                type="checkbox"
-                checked={showCompletedJobs}
-                onChange={() => setShowCompletedJobs(!showCompletedJobs)}
-                className="rounded bg-gray-700 border-gray-600"
-              />
-              Mostrar trabajos completados
-            </label>
             
             {/* Control de tamaño de fuente */}
             <div className="flex items-center gap-3 bg-gray-800/50 rounded-lg p-2 ml-auto">
@@ -469,51 +563,73 @@ export default function StationView({
             <div className="space-y-4">
               {assignments.map(assignment => {
                 const isCompleted = isStationCompleted(assignment);
+                const completionInfo = getCompletionInfo(assignment);
                 
                 return (
                   <div 
                     key={assignment.id} 
                     className={`border border-gray-700 rounded-lg overflow-hidden ${
-                      isCompleted ? 'opacity-60' : ''
+                      isCompleted ? 'bg-green-900/20' : 'bg-gray-800/20'
                     }`}
                   >
-                    <div className="w-full px-4 py-3 bg-gray-800/50 flex items-center justify-between">
-                      <button
-                        onClick={() => toggleJob(assignment.id)}
-                        className="flex items-center gap-3 hover:bg-gray-800/70 transition-colors px-3 py-2 rounded-lg"
-                      >
-                        {expandedJobs[assignment.id] ? 
-                          <FiChevronDown className="text-green-500" /> : 
-                          <FiChevronRight className="text-green-500" />
-                        }
-                        <span className={`font-medium ${getFontSizeClass()}`}>
-                          {assignment.job_number} - {assignment.bundle}
-                        </span>
-                        {assignment.has_sill_seal && 
-                          <span className="text-green-400 text-sm">(SILL SEAL)</span>
-                        }
-                      </button>
+                    <div className="w-full px-4 py-3 bg-gray-800/50 flex flex-col md:flex-row md:items-center justify-between">
+                      <div className="flex-1">
+                        <button
+                          onClick={() => toggleJob(assignment.id)}
+                          className="flex items-center gap-3 hover:bg-gray-800/70 transition-colors px-3 py-2 rounded-lg"
+                        >
+                          {expandedJobs[assignment.id] ? 
+                            <FiChevronDown className="text-green-500" /> : 
+                            <FiChevronRight className="text-green-500" />
+                          }
+                          <span className={`font-medium ${getFontSizeClass()}`}>
+                            {assignment.job_number} - {assignment.bundle}
+                          </span>
+                          {assignment.has_sill_seal && 
+                            <span className="text-green-400 text-sm">(SILL SEAL)</span>
+                          }
+                        </button>
+                      </div>
                       
-                      <div className="flex items-center gap-4">
-                        <span className={`text-gray-300 ${getFontSizeClass(1)}`}>
+                      <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 mt-2 md:mt-0">
+                        <div className={`text-gray-300 ${getFontSizeClass(1)}`}>
                           {assignment.lineal_feet} pies
-                        </span>
+                        </div>
                         
-                        {/* Botón de completar tarea */}
-                        {!isCompleted ? (
-                          <button
-                            onClick={() => markStationCompleted(assignment.id)}
-                            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded transition-colors"
-                          >
-                            <FiCheckSquare />
-                            <span>Completar</span>
-                          </button>
-                        ) : (
-                          <div className="flex items-center gap-2 bg-gray-700 text-gray-300 px-3 py-2 rounded">
-                            <FiClock />
-                            <span>Completado</span>
+                        {/* Información de completado si aplica */}
+                        {completionInfo && (
+                          <div className="flex items-center gap-2 text-gray-300 px-3 py-1 rounded bg-gray-800/50">
+                            <FiClock className="text-green-400" />
+                            <span>
+                              {completionInfo.time} 
+                              <span className="ml-1 text-sm">
+                                ({completionInfo.duration} min)
+                              </span>
+                            </span>
                           </div>
                         )}
+                        
+                        {/* Botón de completar/deshacer */}
+                        <button
+                          onClick={() => toggleStationCompletion(assignment.id)}
+                          className={`flex items-center gap-2 ${
+                            isCompleted 
+                              ? 'bg-orange-600 hover:bg-orange-700' 
+                              : 'bg-green-600 hover:bg-green-700'
+                          } text-white px-3 py-2 rounded transition-colors`}
+                        >
+                          {isCompleted ? (
+                            <>
+                              <FiRefreshCw />
+                              <span>Deshacer</span>
+                            </>
+                          ) : (
+                            <>
+                              <FiCheckSquare />
+                              <span>Completar</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
                     
@@ -553,7 +669,7 @@ export default function StationView({
                                   {members.map((member, idx) => (
                                     <div key={idx} className="text-gray-300">
                                       <div className="flex items-baseline gap-2">
-                                        <span className="text-green-400 font-medium">{member.count} x </span>
+                                        <span className="font-medium text-gray-300">{member.count} x</span>
                                         <span className={getDescriptionColor(member.description)}>
                                           {convertToFeetInches(member.length)} {member.description}
                                         </span>
