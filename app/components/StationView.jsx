@@ -42,7 +42,7 @@ export default function StationView({
   
   // Extraer todos los tipos de miembros disponibles
   useEffect(() => {
-    if (assignments.length > 0) {
+    if (assignments && assignments.length > 0) {
       const types = new Set();
       assignments.forEach(assignment => {
         if (assignment.members_data && Array.isArray(assignment.members_data)) {
@@ -51,14 +51,15 @@ export default function StationView({
           });
         }
       });
-      setAvailableTypes(Array.from(types).sort());
+      const typesArray = Array.from(types).sort();
+      setAvailableTypes(typesArray);
       
       // Si no hay tipos seleccionados, seleccionar todos por defecto
-      if (selectedTypes.length === 0) {
-        setSelectedTypes(Array.from(types));
+      if (!selectedTypes || selectedTypes.length === 0) {
+        setSelectedTypes(typesArray);
       }
     }
-  }, [assignments, selectedTypes.length]);
+  }, [assignments, selectedTypes]);
   
   // Función para alternar selección de tipo
   const handleTypeSelect = (type) => {
