@@ -8,7 +8,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from '@tanstack/react-table';
-import { FiUpload, FiEdit2, FiSave, FiX, FiFile, FiChevronDown, FiChevronRight, FiFilter, FiSearch } from 'react-icons/fi';
+import { FiUpload, FiEdit2, FiSave, FiX, FiFile, FiChevronDown, FiChevronRight, FiFilter, FiSearch, FiTrash2, FiRotateCcw } from 'react-icons/fi';
 import FileUploader from './FileUploader';
 import { supabase } from '@/lib/supabase';
 
@@ -28,6 +28,8 @@ export default function ExcelTables() {
     return saved ? JSON.parse(saved) : [];
   });
   const [isLoading, setIsLoading] = useState(false);
+  // Historial de acciones para la función de deshacer
+  const [actionHistory, setActionHistory] = useState([]);
 
   useEffect(() => {
     localStorage.setItem('selectedTypes', JSON.stringify(selectedTypes));
@@ -295,14 +297,93 @@ export default function ExcelTables() {
     getSortedRowModel: getSortedRowModel(),
   });
 
+  // Función para eliminar una fila
+  const handleDeleteRow = (lineNumber, rowIndex) => {
+    const currentData = lineNumber === 1 ? line1Data : line2Data;
+    const deletedRow = currentData[rowIndex];
+    const newData = currentData.filter((_, index) => index !== rowIndex);
+    
+    // Guardar acción en el historial para poder deshacer
+    setActionHistory(prev => [...prev, {
+      type: 'DELETE_ROW',
+      lineNumber,
+      rowIndex,
+      row: deletedRow
+    }]);
+    
+    if (lineNumber === 1) {
+      setLine1Data(newData);
+    } else {
+      setLine2Data(newData);
+    }
+  };
+  
+  // Función para deshacer la última acción
+  const handleUndo = () => {
+    if (actionHistory.length === 0) return;
+    
+    const lastAction = actionHistory[actionHistory.length - 1];
+    
+    if (lastAction.type === 'DELETE_ROW') {
+      // Restaurar la fila eliminada
+      if (lastAction.lineNumber === 1) {
+        const newData = [...line1Data];
+        // Insertamos en la posición original si es posible
+        if (lastAction.rowIndex <= newData.length) {
+          newData.splice(lastAction.rowIndex, 0, lastAction.row);
+        } else {
+          newData.push(lastAction.row);
+        }
+        setLine1Data(newData);
+      } else {
+        const newData = [...line2Data];
+        if (lastAction.rowIndex <= newData.length) {
+          newData.splice(lastAction.rowIndex, 0, lastAction.row);
+        } else {
+          newData.push(lastAction.row);
+        }
+        setLine2Data(newData);
+      }
+    } else if (lastAction.type === 'EDIT_CELL') {
+      // Restaurar el valor anterior de la celda
+      if (lastAction.lineNumber === 1) {
+        const newData = [...line1Data];
+        newData[lastAction.rowIndex][lastAction.columnId] = lastAction.oldValue;
+        setLine1Data(newData);
+      } else {
+        const newData = [...line2Data];
+        newData[lastAction.rowIndex][lastAction.columnId] = lastAction.oldValue;
+        setLine2Data(newData);
+      }
+    }
+    
+    // Eliminar la acción del historial
+    setActionHistory(prev => prev.slice(0, -1));
+  };
+
   const handleCellEdit = (value, row, column) => {
-    const newData = [...(row.lineNumber === 1 ? line1Data : line2Data)];
+    const currentData = row.lineNumber === 1 ? line1Data : line2Data;
+    const oldValue = currentData[row.index][column.id];
+    
+    // Guardar acción en el historial para poder deshacer
+    setActionHistory(prev => [...prev, {
+      type: 'EDIT_CELL',
+      lineNumber: row.lineNumber,
+      rowIndex: row.index,
+      columnId: column.id,
+      oldValue: oldValue,
+      newValue: value
+    }]);
+    
+    const newData = [...currentData];
     newData[row.index][column.id] = value;
+    
     if (row.lineNumber === 1) {
       setLine1Data(newData);
     } else {
       setLine2Data(newData);
     }
+    
     setEditingCell(null);
   };
 
@@ -467,6 +548,8 @@ export default function ExcelTables() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-700">
+                  {/* Columna adicional para el botón de eliminar */}
+                  <th className="px-3 py-3 text-left text-sm font-medium text-gray-300 w-10"></th>
                   {columns.map((column, index) => (
                     <th key={index} className="px-6 py-3 text-left text-sm font-medium text-gray-300">
                       {column.header}
@@ -481,6 +564,15 @@ export default function ExcelTables() {
                   return (
                     <React.Fragment key={index}>
                       <tr className="hover:bg-gray-800/30">
+                        {/* Botón para eliminar la fila */}
+                        <td className="px-3 py-4 text-center">
+                          <button
+                            onClick={() => handleDeleteRow(lineNumber, index)}
+                            className="text-red-500 hover:text-red-400 opacity-50 hover:opacity-100 transition-opacity"
+                          >
+                            <FiTrash2 size={16} />
+                          </button>
+                        </td>
                         <td className="px-6 py-4 text-sm text-gray-300">{row.jobNumber}</td>
                         <td className="px-6 py-4 text-sm">
                           <div className="flex items-center gap-4">
@@ -598,9 +690,9 @@ export default function ExcelTables() {
 
   return (
     <div className="container mx-auto p-4">
-      {/* Botón global de búsqueda */}
+      {/* Botón global de búsqueda y deshacer */}
       {(line1Data.length > 0 || line2Data.length > 0) && (
-        <div className="mb-6 flex justify-center">
+        <div className="mb-6 flex justify-center gap-4">
           <button
             onClick={searchAllMatches}
             className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg text-lg font-medium transition-colors shadow-lg"
@@ -618,6 +710,17 @@ export default function ExcelTables() {
               </>
             )}
           </button>
+          
+          {/* Botón de deshacer */}
+          {actionHistory.length > 0 && (
+            <button
+              onClick={handleUndo}
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-lg text-lg font-medium transition-colors shadow-lg"
+            >
+              <FiRotateCcw />
+              <span>Deshacer</span>
+            </button>
+          )}
         </div>
       )}
       
