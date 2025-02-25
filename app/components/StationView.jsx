@@ -25,6 +25,8 @@ export default function StationView({
   const [completedFeet, setCompletedFeet] = useState(0);
   const [pendingFeet, setPendingFeet] = useState(0);
   const [totalFeet, setTotalFeet] = useState(0);
+  // Estado para controlar operaciones optimistas
+  const [updatingAssignmentId, setUpdatingAssignmentId] = useState(null);
   
   // Inicializar el tamaño de fuente desde localStorage una vez que estamos en el cliente
   useEffect(() => {
@@ -210,35 +212,47 @@ export default function StationView({
     return completed.length > 0 ? completed[0] : today;
   };
 
-  // Función para marcar un trabajo como completado en esta estación
+  // Función optimizada para marcar un trabajo como completado sin recargar todos los datos
   const toggleStationCompletion = async (assignmentId) => {
+    // Prevenir múltiples clics
+    if (updatingAssignmentId === assignmentId) return;
+    setUpdatingAssignmentId(assignmentId);
+    
     try {
-      // Primero, obtener la asignación actual
-      const { data: currentAssignment, error: fetchError } = await supabase
-        .from('line_assignments')
-        .select('*')
-        .eq('id', assignmentId)
-        .single();
+      // Encontrar la asignación en el estado actual
+      const assignmentIndex = assignments.findIndex(a => a.id === assignmentId);
+      if (assignmentIndex === -1) {
+        console.error('Asignación no encontrada');
+        return;
+      }
       
-      if (fetchError) throw fetchError;
+      const currentAssignment = assignments[assignmentIndex];
       
       // Encontrar la estación específica
       const stationIndex = currentAssignment.stations.findIndex(s => 
         s.name.toLowerCase() === stationName.toLowerCase()
       );
       
-      if (stationIndex === -1) throw new Error("Estación no encontrada");
+      if (stationIndex === -1) {
+        console.error("Estación no encontrada");
+        return;
+      }
       
-      const updatedStations = [...currentAssignment.stations];
+      // Crear copias profundas para no mutar el estado directamente
+      const updatedAssignments = [...assignments];
+      const updatedAssignment = { ...currentAssignment };
+      const updatedStations = [...updatedAssignment.stations];
       const isCurrentlyCompleted = updatedStations[stationIndex].completed;
       
+      // Preparar los cambios en la estación
+      let updatedStation;
       if (!isCurrentlyCompleted) {
         // Si no está completada, marcarla como completada
         const lastCompletedTime = findLastCompletedTime();
         const now = new Date();
         const minutesDiff = Math.floor((now - lastCompletedTime) / (1000 * 60));
         
-        updatedStations[stationIndex] = {
+        updatedStation = {
           ...updatedStations[stationIndex],
           completed: true,
           completedAt: now.toISOString(),
@@ -247,7 +261,7 @@ export default function StationView({
         };
       } else {
         // Si ya está completada, deshacer
-        updatedStations[stationIndex] = {
+        updatedStation = {
           ...updatedStations[stationIndex],
           completed: false,
           completedAt: null,
@@ -256,19 +270,35 @@ export default function StationView({
         };
       }
       
-      // Guardar los cambios
+      // Actualizar el estado local inmediatamente para UX responsiva
+      updatedStations[stationIndex] = updatedStation;
+      updatedAssignment.stations = updatedStations;
+      updatedAssignments[assignmentIndex] = updatedAssignment;
+      
+      // Actualizar el estado de forma optimista
+      setAssignments(updatedAssignments);
+      
+      // Recalcular totales
+      calculateTotals(updatedAssignments);
+      
+      // Enviar la actualización a la base de datos en segundo plano
       const { error: updateError } = await supabase
         .from('line_assignments')
         .update({ stations: updatedStations })
         .eq('id', assignmentId);
       
-      if (updateError) throw updateError;
-      
-      // Actualizar la UI
-      fetchAssignments();
+      if (updateError) {
+        console.error('Error en la actualización:', updateError);
+        // Si ocurre un error, revertir los cambios en la UI
+        fetchAssignments();
+      }
     } catch (error) {
       console.error('Error al actualizar estado:', error);
       alert('Error al actualizar estado. Por favor intente nuevamente.');
+      // En caso de error, recargar los datos
+      fetchAssignments();
+    } finally {
+      setUpdatingAssignmentId(null);
     }
   };
 
@@ -564,13 +594,14 @@ export default function StationView({
               {assignments.map(assignment => {
                 const isCompleted = isStationCompleted(assignment);
                 const completionInfo = getCompletionInfo(assignment);
+                const isProcessing = updatingAssignmentId === assignment.id;
                 
                 return (
                   <div 
                     key={assignment.id} 
                     className={`border border-gray-700 rounded-lg overflow-hidden ${
                       isCompleted ? 'bg-green-900/20' : 'bg-gray-800/20'
-                    }`}
+                    } ${isProcessing ? 'opacity-70' : ''}`}
                   >
                     <div className="w-full px-4 py-3 bg-gray-800/50 flex flex-col md:flex-row md:items-center justify-between">
                       <div className="flex-1">
@@ -612,13 +643,21 @@ export default function StationView({
                         {/* Botón de completar/deshacer */}
                         <button
                           onClick={() => toggleStationCompletion(assignment.id)}
+                          disabled={isProcessing}
                           className={`flex items-center gap-2 ${
                             isCompleted 
                               ? 'bg-orange-600 hover:bg-orange-700' 
                               : 'bg-green-600 hover:bg-green-700'
-                          } text-white px-3 py-2 rounded transition-colors`}
+                          } text-white px-3 py-2 rounded transition-colors ${
+                            isProcessing ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
                         >
-                          {isCompleted ? (
+                          {isProcessing ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                              <span>Procesando...</span>
+                            </>
+                          ) : isCompleted ? (
                             <>
                               <FiRefreshCw />
                               <span>Deshacer</span>
