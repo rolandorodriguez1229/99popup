@@ -39,6 +39,52 @@ export default function StationView({
     fetchAssignments();
     fetchAvailableDates();
   }, [stationName, lineNumber, selectedDate, showCompletedJobs]);
+  
+  // Extraer todos los tipos de miembros disponibles
+  useEffect(() => {
+    if (assignments.length > 0) {
+      const types = new Set();
+      assignments.forEach(assignment => {
+        if (assignment.members_data && Array.isArray(assignment.members_data)) {
+          assignment.members_data.forEach(member => {
+            if (member.type) types.add(member.type);
+          });
+        }
+      });
+      setAvailableTypes(Array.from(types).sort());
+      
+      // Si no hay tipos seleccionados, seleccionar todos por defecto
+      if (selectedTypes.length === 0) {
+        setSelectedTypes(Array.from(types));
+      }
+    }
+  }, [assignments, selectedTypes.length]);
+  
+  // Función para alternar selección de tipo
+  const handleTypeSelect = (type) => {
+    setSelectedTypes(prev => {
+      if (prev.includes(type)) {
+        return prev.filter(t => t !== type);
+      } else {
+        return [...prev, type];
+      }
+    });
+  };
+  
+  // Función para seleccionar todos los tipos
+  const handleSelectAllTypes = () => {
+    setSelectedTypes(availableTypes);
+  };
+  
+  // Función para deseleccionar todos los tipos
+  const handleDeselectAllTypes = () => {
+    setSelectedTypes([]);
+  };
+  
+  // Función para alternar el panel de filtros
+  const toggleFilters = () => {
+    setExpandedFilters(prev => !prev);
+  };
 
   // Función para obtener todas las fechas disponibles
   const fetchAvailableDates = async () => {
@@ -325,6 +371,54 @@ export default function StationView({
               </button>
             </div>
           </div>
+          
+          {/* Filtro de tipos de miembros */}
+          <div className="mt-4">
+            <button
+              onClick={toggleFilters}
+              className="flex items-center gap-2 text-gray-200 hover:text-white bg-gray-800/50 px-4 py-2 rounded-lg w-full"
+            >
+              <FiFilter />
+              <span>Filtros de Tipos</span>
+              {expandedFilters ? <FiChevronDown /> : <FiChevronRight />}
+            </button>
+            
+            {expandedFilters && (
+              <div className="mt-2 p-4 bg-gray-800/30 rounded-lg">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-gray-300">Tipos de miembros:</h4>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSelectAllTypes}
+                      className="text-sm text-blue-400 hover:text-blue-300"
+                    >
+                      Seleccionar todos
+                    </button>
+                    <span className="text-gray-600">|</span>
+                    <button
+                      onClick={handleDeselectAllTypes}
+                      className="text-sm text-blue-400 hover:text-blue-300"
+                    >
+                      Deseleccionar todos
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {availableTypes.map(type => (
+                    <label key={type} className="flex items-center gap-2 text-gray-400">
+                      <input
+                        type="checkbox"
+                        checked={selectedTypes.includes(type)}
+                        onChange={() => handleTypeSelect(type)}
+                        className="rounded bg-gray-700 border-gray-600"
+                      />
+                      {type}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         
         {/* Lista de trabajos */}
@@ -405,7 +499,9 @@ export default function StationView({
                         
                         {/* Detalles de miembros */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {Object.entries(getMembersByType(assignment.members_data)).map(([type, members]) => (
+                          {Object.entries(getMembersByType(assignment.members_data))
+                            .filter(([type]) => selectedTypes.includes(type))
+                            .map(([type, members]) => (
                             <div key={type} className="space-y-2">
                               <button
                                 onClick={() => toggleType(`${assignment.id}-${type}`)}
