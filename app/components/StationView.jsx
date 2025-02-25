@@ -500,7 +500,10 @@ export default function StationView({
                         {/* Detalles de miembros */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {Object.entries(getMembersByType(assignment.members_data))
-                            .filter(([type]) => selectedTypes.includes(type))
+                            .filter(([type]) => {
+                              // Comprobación segura para evitar errores cuando selectedTypes aún no está definido
+                              return !selectedTypes || selectedTypes.length === 0 || selectedTypes.includes(type);
+                            })
                             .map(([type, members]) => (
                             <div key={type} className="space-y-2">
                               <button
