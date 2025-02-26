@@ -5,7 +5,7 @@ import { FiArrowLeft, FiChevronDown, FiChevronRight, FiCheckSquare, FiFilter, Fi
 import { supabase } from '@/lib/supabase';
 
 export default function StationView({ 
-  stationName,  // Ej: "99", "popup", "ventanas", "mesa"
+  stationName,  // Ej: "99", "popup", "ventanas", "mesa" ja
   lineNumber,   // 1 o 2 
   title         // Ej: "99#1" o "PopUp#2"
 }) {
