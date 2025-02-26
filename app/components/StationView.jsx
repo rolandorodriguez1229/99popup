@@ -166,20 +166,59 @@ export default function StationView({
   };
 
 // Función para cargar asignaciones de la estación actual
+// Función para cargar asignaciones de la estación actual
 const fetchAssignments = async () => {
   setLoading(true);
   try {
+    // Obtenemos los datos con la columna timestamps para verificar cambios
     const { data, error } = await supabase
       .from('line_assignments')
       .select('*')
       .eq('line_number', lineNumber)
       .eq('assignment_date', selectedDate)
-      .order('id'); // Aquí está el cambio clave: ordenar por ID para mantener el orden de inserción
+      .order('id');
     
     if (error) throw error;
     
-    // Eliminamos la reordenación manual para preservar el orden original
-    setAssignments(data);
+    // Verificamos que las estaciones estén correctamente formateadas
+    const validatedData = data.map(assignment => {
+      // Si las estaciones no existen o no son un array, inicializamos con valores predeterminados
+      if (!assignment.stations || !Array.isArray(assignment.stations)) {
+        assignment.stations = ["99", "popup", "ventanas", "mesa"].map(station => ({
+          name: station,
+          completed: false,
+          completedAt: null
+        }));
+      }
+      
+      // Asegurarse de que exista la estación actual en el array
+      const hasCurrentStation = assignment.stations.some(s => 
+        s.name.toLowerCase() === stationName.toLowerCase()
+      );
+      
+      if (!hasCurrentStation) {
+        assignment.stations.push({
+          name: stationName.toLowerCase(),
+          completed: false,
+          completedAt: null
+        });
+      }
+      
+      return assignment;
+    });
+    
+    setAssignments(validatedData);
+    
+    // Actualizar los datos en la base de datos si se hicieron correcciones
+    validatedData.forEach(async (assignment, index) => {
+      if (JSON.stringify(assignment.stations) !== JSON.stringify(data[index].stations)) {
+        await supabase
+          .from('line_assignments')
+          .update({ stations: assignment.stations })
+          .eq('id', assignment.id);
+      }
+    });
+    
   } catch (error) {
     console.error(`Error al cargar asignaciones para estación ${stationName}:`, error);
   } finally {
