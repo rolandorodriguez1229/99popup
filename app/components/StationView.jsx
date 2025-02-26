@@ -247,94 +247,105 @@ const fetchAssignments = async () => {
   };
 
   // Función optimizada para marcar un trabajo como completado sin recargar todos los datos
-  const toggleStationCompletion = async (assignmentId) => {
-    // Prevenir múltiples clics
-    if (updatingAssignmentId === assignmentId) return;
-    setUpdatingAssignmentId(assignmentId);
+// Función optimizada para marcar un trabajo como completado con persistencia mejorada
+const toggleStationCompletion = async (assignmentId) => {
+  // Prevenir múltiples clics
+  if (updatingAssignmentId === assignmentId) return;
+  setUpdatingAssignmentId(assignmentId);
+  
+  try {
+    // Primero, obtenemos el estado más reciente de la base de datos
+    const { data: currentData, error: fetchError } = await supabase
+      .from('line_assignments')
+      .select('stations, id')
+      .eq('id', assignmentId)
+      .single();
     
-    try {
-      // Encontrar la asignación en el estado actual
-      const assignmentIndex = assignments.findIndex(a => a.id === assignmentId);
-      if (assignmentIndex === -1) {
-        console.error('Asignación no encontrada');
-        return;
-      }
+    if (fetchError) throw fetchError;
+    
+    // Encontrar la estación específica
+    const stationIndex = currentData.stations.findIndex(s => 
+      s.name.toLowerCase() === stationName.toLowerCase()
+    );
+    
+    if (stationIndex === -1) {
+      console.error("Estación no encontrada");
+      return;
+    }
+    
+    // Crear copia del array de estaciones
+    const updatedStations = [...currentData.stations];
+    const isCurrentlyCompleted = updatedStations[stationIndex].completed;
+    
+    // Preparar los cambios en la estación
+    let updatedStation;
+    if (!isCurrentlyCompleted) {
+      // Si no está completada, marcarla como completada
+      const now = new Date();
+      const lastCompletedTime = findLastCompletedTime();
+      const minutesDiff = Math.floor((now - lastCompletedTime) / (1000 * 60));
       
-      const currentAssignment = assignments[assignmentIndex];
-      
-      // Encontrar la estación específica
-      const stationIndex = currentAssignment.stations.findIndex(s => 
-        s.name.toLowerCase() === stationName.toLowerCase()
-      );
-      
-      if (stationIndex === -1) {
-        console.error("Estación no encontrada");
-        return;
-      }
-      
-      // Crear copias profundas para no mutar el estado directamente
+      updatedStation = {
+        ...updatedStations[stationIndex],
+        completed: true,
+        completedAt: now.toISOString(),
+        previousCompletedAt: lastCompletedTime.toISOString(),
+        timeTaken: minutesDiff
+      };
+    } else {
+      // Si ya está completada, deshacer
+      updatedStation = {
+        ...updatedStations[stationIndex],
+        completed: false,
+        completedAt: null,
+        previousCompletedAt: null,
+        timeTaken: null
+      };
+    }
+    
+    // Actualizar el array de estaciones
+    updatedStations[stationIndex] = updatedStation;
+    
+    // Enviar la actualización a la base de datos
+    const { error: updateError } = await supabase
+      .from('line_assignments')
+      .update({ 
+        stations: updatedStations,
+        // También actualizamos un campo de última modificación para facilitar seguimiento
+        last_updated: new Date().toISOString()
+      })
+      .eq('id', assignmentId);
+    
+    if (updateError) throw updateError;
+    
+    // Actualizar el estado local después de confirmar que la DB se actualizó
+    const assignmentIndex = assignments.findIndex(a => a.id === assignmentId);
+    if (assignmentIndex !== -1) {
       const updatedAssignments = [...assignments];
-      const updatedAssignment = { ...currentAssignment };
-      const updatedStations = [...updatedAssignment.stations];
-      const isCurrentlyCompleted = updatedStations[stationIndex].completed;
-      
-      // Preparar los cambios en la estación
-      let updatedStation;
-      if (!isCurrentlyCompleted) {
-        // Si no está completada, marcarla como completada
-        const lastCompletedTime = findLastCompletedTime();
-        const now = new Date();
-        const minutesDiff = Math.floor((now - lastCompletedTime) / (1000 * 60));
-        
-        updatedStation = {
-          ...updatedStations[stationIndex],
-          completed: true,
-          completedAt: now.toISOString(),
-          previousCompletedAt: lastCompletedTime.toISOString(),
-          timeTaken: minutesDiff
-        };
-      } else {
-        // Si ya está completada, deshacer
-        updatedStation = {
-          ...updatedStations[stationIndex],
-          completed: false,
-          completedAt: null,
-          previousCompletedAt: null,
-          timeTaken: null
-        };
-      }
-      
-      // Actualizar el estado local inmediatamente para UX responsiva
-      updatedStations[stationIndex] = updatedStation;
+      const updatedAssignment = { ...updatedAssignments[assignmentIndex] };
       updatedAssignment.stations = updatedStations;
       updatedAssignments[assignmentIndex] = updatedAssignment;
       
-      // Actualizar el estado de forma optimista
+      // Actualizar el estado con los datos confirmados
       setAssignments(updatedAssignments);
       
       // Recalcular totales
       calculateTotals(updatedAssignments);
-      
-      // Enviar la actualización a la base de datos en segundo plano
-      const { error: updateError } = await supabase
-        .from('line_assignments')
-        .update({ stations: updatedStations })
-        .eq('id', assignmentId);
-      
-      if (updateError) {
-        console.error('Error en la actualización:', updateError);
-        // Si ocurre un error, revertir los cambios en la UI
-        fetchAssignments();
-      }
-    } catch (error) {
-      console.error('Error al actualizar estado:', error);
-      alert('Error al actualizar estado. Por favor intente nuevamente.');
-      // En caso de error, recargar los datos
-      fetchAssignments();
-    } finally {
-      setUpdatingAssignmentId(null);
     }
-  };
+    
+    // Opcional: Mostrar un mensaje de éxito usando un toast o similar
+    console.log(`Estación ${stationName} ${!isCurrentlyCompleted ? 'completada' : 'marcada como pendiente'}`);
+    
+  } catch (error) {
+    console.error('Error al actualizar estado:', error);
+    alert('Error al actualizar estado. Por favor intente nuevamente.');
+    
+    // Recargar los datos en caso de error para asegurar consistencia
+    fetchAssignments();
+  } finally {
+    setUpdatingAssignmentId(null);
+  }
+};
 
   // Función para verificar si esta estación está completada
   const isStationCompleted = (assignment) => {
