@@ -5,10 +5,10 @@ import { FiArrowLeft } from 'react-icons/fi';
 export default function Linea1() {
   const router = useRouter();
   const buttons = [
-    { name: '99#1', path: 'linea1//99-1' },
-    { name: 'PopUp#1', path: '/popup-1' },
-    { name: 'Ventanas#1', path: '/ventanas-1' },
-    { name: 'Mesa#1', path: '/mesa-1' },
+    { name: '99#1', path: 'linea1/99-1' },
+    { name: 'PopUp#1', path: 'linea1/popup-1' },
+    { name: 'Ventanas#1', path: 'linea1/ventanas-1' },
+    { name: 'Mesa#1', path: 'linea1/mesa-1' },
   ];
 
   return (
