@@ -165,39 +165,27 @@ export default function StationView({
     }
   };
 
-  // Función para cargar asignaciones de la estación actual
-  const fetchAssignments = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('line_assignments')
-        .select('*')
-        .eq('line_number', lineNumber)
-        .eq('assignment_date', selectedDate)
-        .order('job_number');
-      
-      if (error) throw error;
-      
-      // Ordenar las asignaciones
-      const sortedData = data.sort((a, b) => {
-        // Primero ordenar por número de trabajo
-        if (a.job_number !== b.job_number) {
-          return a.job_number.localeCompare(b.job_number);
-        }
-        
-        // Después ordenar por nombre de bundle
-        const bundleNumA = parseInt(a.bundle.match(/\d+/) || [0]);
-        const bundleNumB = parseInt(b.bundle.match(/\d+/) || [0]);
-        return bundleNumA - bundleNumB;
-      });
-      
-      setAssignments(sortedData);
-    } catch (error) {
-      console.error(`Error al cargar asignaciones para estación ${stationName}:`, error);
-    } finally {
-      setLoading(false);
-    }
-  };
+// Función para cargar asignaciones de la estación actual
+const fetchAssignments = async () => {
+  setLoading(true);
+  try {
+    const { data, error } = await supabase
+      .from('line_assignments')
+      .select('*')
+      .eq('line_number', lineNumber)
+      .eq('assignment_date', selectedDate)
+      .order('id'); // Aquí está el cambio clave: ordenar por ID para mantener el orden de inserción
+    
+    if (error) throw error;
+    
+    // Eliminamos la reordenación manual para preservar el orden original
+    setAssignments(data);
+  } catch (error) {
+    console.error(`Error al cargar asignaciones para estación ${stationName}:`, error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Encontrar la última completada para calcular tiempo
   const findLastCompletedTime = () => {
