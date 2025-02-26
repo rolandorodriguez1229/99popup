@@ -127,7 +127,8 @@ export default function JobsList() {
   const getDescriptionColor = (description) => {
     if (description.includes('2x4')) return 'text-yellow-400';
     if (description.includes('2x6')) return 'text-blue-400';
-    if (description.includes('3-1/2X4')) return 'text-red-400';
+    if (description.includes('4-3/8')) return 'text-red-400';
+    if (description.includes('7-1/4')) return 'text-orange-400';
     if (description.includes('3.5 x 11.25')) return 'text-purple-400';
     if (description.includes('2x12')) return 'text-pink-400';
     if (description.includes('2x8')) return 'text-cyan-400';
