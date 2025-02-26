@@ -8,9 +8,10 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from '@tanstack/react-table';
-import { FiUpload, FiEdit2, FiSave, FiX, FiFile, FiChevronDown, FiChevronRight, FiFilter, FiSearch, FiTrash2, FiRotateCcw, FiShare, FiPlus, FiMinus } from 'react-icons/fi';
+import { FiUpload, FiEdit2, FiSave, FiX, FiFile, FiChevronDown, FiChevronRight, FiFilter, FiSearch, FiTrash2, FiRotateCcw, FiShare, FiPlus, FiMinus, FiType, FiMove, FiCalendar } from 'react-icons/fi';
 import FileUploader from './FileUploader';
 import { supabase } from '@/lib/supabase';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 export default function ExcelTables() {
   const [line1Data, setLine1Data] = useState([]);
@@ -358,11 +359,145 @@ export default function ExcelTables() {
     }
   };
   
-  // Función para enviar datos a la línea correspondiente
+  // Función para obtener trabajos del día actual
+  const fetchTodayAssignments = async (lineNumber) => {
+    setIsLoading(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data, error } = await supabase
+        .from('line_assignments')
+        .select('*')
+        .eq('line_number', lineNumber)
+        .eq('assignment_date', today);
+      
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        // Transformar los datos al formato que necesitamos
+        const formattedData = data.map(item => ({
+          jobNumber: item.job_number,
+          bundle: item.bundle,
+          linealFeet: item.lineal_feet,
+          id: item.id // Guardar el ID para futuras operaciones
+        }));
+        
+        // Cargar también los datos de los miembros
+        const newBundleMembers = { ...bundleMembers };
+        
+        for (const item of data) {
+          const key = `${item.job_number}-${item.bundle}`;
+          if (!newBundleMembers[key] && item.members_data) {
+            newBundleMembers[key] = item.members_data;
+          }
+        }
+        
+        // Actualizar estados
+        setBundleMembers(newBundleMembers);
+        
+        if (lineNumber === 1) {
+          setLine1Data(formattedData);
+        } else {
+          setLine2Data(formattedData);
+        }
+        
+        alert(`¡Se han cargado ${formattedData.length} trabajos asignados hoy a la Línea ${lineNumber}!`);
+      } else {
+        alert(`No hay trabajos asignados hoy a la Línea ${lineNumber}.`);
+      }
+    } catch (error) {
+      console.error('Error al cargar trabajos del día:', error);
+      alert('Error al cargar los trabajos. Por favor intente nuevamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Función para añadir trabajos sin duplicar
+  const addNonDuplicateJobs = async (file, lineNumber) => {
+    setIsLoading(true);
+    try {
+      const data = await readExcelFile(file);
+      if (!data) return;
+      
+      // Formatear datos nuevos
+      const newJobs = data.map(row => ({
+        jobNumber: row.Job ? row.Job.toString() : '',
+        bundle: row.Bundle ? row.Bundle.toString() : '',
+        linealFeet: row['Lineal Feet'] ? parseFloat(row['Lineal Feet']) : 0,
+      }));
+      
+      // Obtener trabajos actuales
+      const currentJobs = lineNumber === 1 ? line1Data : line2Data;
+      
+      // Filtrar para añadir solo trabajos que no existen
+      const nonDuplicateJobs = newJobs.filter(newJob => 
+        !currentJobs.some(currentJob => 
+          currentJob.jobNumber === newJob.jobNumber && 
+          currentJob.bundle === newJob.bundle
+        )
+      );
+      
+      if (nonDuplicateJobs.length === 0) {
+        alert('No hay nuevos trabajos para añadir. Todos ya existen en la tabla.');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Combinar trabajos existentes con nuevos
+      const combinedJobs = [...currentJobs, ...nonDuplicateJobs];
+      
+      // Actualizar estado
+      if (lineNumber === 1) {
+        setLine1Data(combinedJobs);
+      } else {
+        setLine2Data(combinedJobs);
+      }
+      
+      // Cargar miembros para los nuevos trabajos
+      await loadBundleMembers(nonDuplicateJobs);
+      
+      alert(`¡Se han añadido ${nonDuplicateJobs.length} nuevos trabajos a la tabla!`);
+    } catch (error) {
+      console.error('Error al añadir trabajos:', error);
+      alert('Error al añadir trabajos. Por favor intente nuevamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Manejar el arrastre y soltura para reordenar filas
+  const handleDragEnd = (result, lineNumber) => {
+    if (!result.destination) return;
+    
+    const items = lineNumber === 1 ? [...line1Data] : [...line2Data];
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    if (lineNumber === 1) {
+      setLine1Data(items);
+    } else {
+      setLine2Data(items);
+    }
+  };
+  
+  // Modificación de la función assignToLine para primero eliminar los trabajos existentes
   const assignToLine = async (lineNumber) => {
     setIsLoading(true);
     try {
+      const today = new Date().toISOString().split('T')[0];
       const tableData = lineNumber === 1 ? line1Data : line2Data;
+      
+      // Si no estamos en modo agregar, primero eliminamos las asignaciones existentes
+      if (!addMode) {
+        const { error: deleteError } = await supabase
+          .from('line_assignments')
+          .delete()
+          .eq('line_number', lineNumber)
+          .eq('assignment_date', today);
+        
+        if (deleteError) throw deleteError;
+      }
       
       // Preparar datos completos incluyendo miembros
       const completeData = tableData.map(row => {
@@ -375,7 +510,7 @@ export default function ExcelTables() {
           hasSillSeal: bundleMembers[key] ? hasSillSeal(bundleMembers[key]) : false,
           studsSummary: bundleMembers[key] ? getStudsSummary(bundleMembers[key]) : "",
           lineNumber: lineNumber,
-          date: new Date().toISOString().split('T')[0], // Fecha actual en formato YYYY-MM-DD
+          date: today,
           completed: false,
           stations: ["99", "popup", "ventanas", "mesa"].map(station => ({
             name: station,
@@ -385,7 +520,7 @@ export default function ExcelTables() {
         };
       });
       
-      // Guardar en Supabase en una nueva tabla llamada 'line_assignments'
+      // Guardar en Supabase
       for (const item of completeData) {
         const { error } = await supabase
           .from('line_assignments')
@@ -408,7 +543,9 @@ export default function ExcelTables() {
         }
       }
       
-      alert(`¡Datos enviados exitosamente a Línea ${lineNumber}!`);
+      alert(`¡Datos ${addMode ? 'añadidos' : 'enviados'} exitosamente a Línea ${lineNumber}!`);
+      // Reiniciar el modo después de enviar
+      setAddMode(false);
     } catch (error) {
       console.error('Error al asignar a línea:', error);
       alert('Error al enviar datos a la línea. Por favor intente nuevamente.');
@@ -666,147 +803,137 @@ export default function ExcelTables() {
     );
   };
 
+  // Estado para controlar si estamos en modo "agregar" o "reemplazar"
+  const [addMode, setAddMode] = useState(false);
+
   const renderTable = (lineNumber) => {
-    const data = lineNumber === 1 ? line1Data : line2Data;
+    const tableData = lineNumber === 1 ? line1Data : line2Data;
     
     return (
-      <div className="glass-card rounded-2xl p-8 mt-8">
+      <div className="glass-card mb-10 p-6 rounded-lg">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">Línea {lineNumber}</h2>
+          <h2 className="text-xl font-bold text-white">Tabla de Línea {lineNumber}</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                const fontSize = window.prompt("Ingrese el tamaño de fuente (1-5):", "3");
+                if (fontSize && !isNaN(parseInt(fontSize)) && parseInt(fontSize) >= 1 && parseInt(fontSize) <= 5) {
+                  setFontSize(parseInt(fontSize));
+                }
+              }}
+              className="text-blue-400 hover:text-blue-300"
+            >
+              <FiType size={20} />
+            </button>
+            {actionHistory.length > 0 && (
+              <button
+                onClick={handleUndo}
+                className="text-amber-500 hover:text-amber-400"
+              >
+                <FiRotateCcw size={20} />
+              </button>
+            )}
+          </div>
         </div>
-
+        
         {renderFiltersPanel(lineNumber)}
 
-        {data.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-700">
-                  {/* Columna adicional para el botón de eliminar */}
-                  <th className="px-3 py-3 text-left text-sm font-medium text-gray-300 w-10"></th>
-                  {columns.map((column, index) => (
-                    <th key={index} className="px-6 py-3 text-left text-sm font-medium text-gray-300">
-                      {column.header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className={`divide-y divide-gray-700/50 ${getFontSizeClass()}`}>
-                {data.map((row, index) => {
-                  const key = `${row.jobNumber}-${row.bundle}`;
-                  const members = bundleMembers[key];
-                  const hasSillSealFlag = members ? hasSillSeal(members) : false;
-                  
-                  return (
-                    <React.Fragment key={index}>
-                      <tr className="hover:bg-gray-800/30">
-                        {/* Botón para eliminar la fila */}
-                        <td className="px-3 py-4 text-center">
-                          <button
-                            onClick={() => handleDeleteRow(lineNumber, index)}
-                            className="text-red-500 hover:text-red-400 opacity-50 hover:opacity-100 transition-opacity"
-                          >
-                            <FiTrash2 size={16} />
-                          </button>
-                        </td>
-                        <td className="px-6 py-4 text-gray-300">
-                          <div className="flex items-center gap-2">
-                            <span>{row.jobNumber}</span>
-                            {hasSillSealFlag && <span className="text-green-400 text-sm">(SILL SEAL)</span>}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm">
-                          <div className="flex items-center gap-4">
-                            {members ? (
-                              <button
-                                onClick={() => toggleBundle(key)}
-                                className="flex items-center gap-2 text-gray-300 hover:text-white"
-                              >
-                                {expandedBundles[key] ? 
-                                  <FiChevronDown className="text-green-500" /> : 
-                                  <FiChevronRight className="text-green-500" />
-                                }
-                                <span>{row.bundle}</span>
-                              </button>
-                            ) : (
-                              <span className="text-gray-300 ml-6">{row.bundle}</span>
-                            )}
-                            {members && (
-                              <div 
-                                className="text-left flex-1"
-                                dangerouslySetInnerHTML={{ __html: getStudsSummary(members) }}
-                              />
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-300">
-                          {renderCell({ 
-                            getValue: () => row.linealFeet,
-                            row: { index },
-                            column: { id: 'linealFeet' }
-                          }, lineNumber)}
-                        </td>
+        {tableData.length > 0 && (
+          <div className="overflow-x-auto mt-4">
+            <DragDropContext onDragEnd={(result) => handleDragEnd(result, lineNumber)}>
+              <Droppable droppableId={`table-${lineNumber}`}>
+                {(provided) => (
+                  <table className="w-full text-left table-auto" {...provided.droppableProps} ref={provided.innerRef}>
+                    <thead>
+                      <tr className="border-b border-gray-700">
+                        <th className="p-3"></th> {/* Columna para el ícono de arrastrar */}
+                        {columns.map(column => (
+                          <th key={column.accessorKey} className="p-3 font-medium text-gray-400">
+                            {column.header}
+                          </th>
+                        ))}
+                        <th className="p-3"></th> {/* Columna para acciones */}
                       </tr>
-                      {expandedBundles[key] && members && (
-                        <tr>
-                          <td colSpan="3" className="px-6 py-4 bg-gray-800/30">
-                            <div className="pl-8">
-                              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                                {Object.entries(getMembersByType(members))
-                                  .filter(([type]) => selectedTypes.length === 0 || selectedTypes.includes(type))
-                                  .map(([type, typeMembers]) => (
-                                  <div key={type} className="mb-6 last:mb-0">
-                                    <button
-                                      onClick={() => toggleType(`${key}-${type}`)}
-                                      className="flex items-center gap-2 text-green-500 font-medium text-lg border-b border-gray-700/50 pb-2 w-full"
-                                    >
-                                      {expandedTypes[`${key}-${type}`] ? 
-                                        <FiChevronDown /> : 
-                                        <FiChevronRight />
-                                      }
-                                      <div className="flex items-center gap-2">
-                                        <div className="h-2 w-2 rounded-full bg-purple-500"></div>
-                                        <span className="text-gray-200">{type}</span>
-                                        <span className="text-gray-400">({typeMembers.length})</span>
-                                      </div>
-                                    </button>
-                                    {expandedTypes[`${key}-${type}`] && (
-                                      <div className="grid grid-cols-2 gap-x-6 gap-y-2 pl-4 mt-2">
-                                        {typeMembers.map((member, idx) => (
-                                          <div key={idx} className="text-gray-400 text-sm">
-                                            <div className="flex flex-col">
-                                              <div className="flex items-center gap-2">
-                                                <div className="h-1 w-1 rounded-full bg-gray-600"></div>
-                                                <span className="font-medium text-gray-300">{member.count} x</span>
-                                                <span className={getDescriptionColor(member.description)}>
-                                                  {convertToFeetInches(parseFloat(member.length))} {member.description}
-                                                </span>
-                                              </div>
-                                              <div className="text-gray-400 pl-3">
-                                                {decimalToFraction(parseFloat(member.length))}″
-                                              </div>
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                      {tableData.map((row, index) => (
+                        <Draggable key={`${row.jobNumber}-${row.bundle}-${index}`} draggableId={`${row.jobNumber}-${row.bundle}-${index}`} index={index}>
+                          {(provided) => (
+                            <tr 
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className="border-b border-gray-700/50 hover:bg-gray-800/30"
+                            >
+                              <td className="p-3 text-gray-400" {...provided.dragHandleProps}>
+                                <FiMove className="cursor-move" />
+                              </td>
+                              {columns.map(column => (
+                                <td 
+                                  key={column.accessorKey} 
+                                  className={`p-3 ${getFontSizeClass()}`}
+                                  onClick={() => {
+                                    if (editingCell?.rowIndex === index && editingCell?.columnId === column.accessorKey) {
+                                      return;
+                                    }
+                                    setEditingCell({ rowIndex: index, columnId: column.accessorKey, lineNumber });
+                                    setEditValue(row[column.accessorKey]);
+                                  }}
+                                >
+                                  {editingCell?.rowIndex === index && editingCell?.columnId === column.accessorKey ? (
+                                    <input
+                                      type="text"
+                                      value={editValue}
+                                      onChange={(e) => setEditValue(e.target.value)}
+                                      onBlur={() => handleCellEdit(editValue, { index, lineNumber }, { id: column.accessorKey })}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          handleCellEdit(editValue, { index, lineNumber }, { id: column.accessorKey });
+                                        } else if (e.key === 'Escape') {
+                                          setEditingCell(null);
+                                        }
+                                      }}
+                                      className="bg-gray-700 text-white p-1 w-full outline-none rounded"
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <span>{row[column.accessorKey]}</span>
+                                  )}
+                                </td>
+                              ))}
+                              <td className="p-3">
+                                <button
+                                  onClick={() => handleDeleteRow(lineNumber, index)}
+                                  className="text-red-500 hover:text-red-400 transition-colors"
+                                >
+                                  <FiTrash2 />
+                                </button>
+                              </td>
+                            </tr>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </tbody>
+                  </table>
+                )}
+              </Droppable>
+            </DragDropContext>
           </div>
         )}
-
+        
         <div className="flex flex-wrap gap-4 mt-6">
-          <label className="flex items-center gap-2 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors">
+          {/* Botón para obtener la tabla del día */}
+          <button
+            onClick={() => fetchTodayAssignments(lineNumber)}
+            className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded transition-colors shadow-md"
+            disabled={isLoading}
+          >
+            <FiCalendar />
+            <span>Obtener tabla del día</span>
+          </button>
+          
+          {/* Botón para subir Excel (normal o agregar) */}
+          <label className="flex items-center gap-2 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors shadow-md">
             <FiUpload />
             <span>Subir Excel</span>
             <input
@@ -816,9 +943,25 @@ export default function ExcelTables() {
               onChange={(e) => handleFileUpload(e.target.files[0], lineNumber)}
             />
           </label>
+          
+          {/* Botón para agregar trabajos */}
+          <label className="flex items-center gap-2 cursor-pointer bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded transition-colors shadow-md">
+            <FiPlus />
+            <span>Agregar trabajos</span>
+            <input
+              type="file"
+              className="hidden"
+              accept=".xlsx,.xls"
+              onChange={(e) => {
+                addNonDuplicateJobs(e.target.files[0], lineNumber);
+                setAddMode(true);
+              }}
+            />
+          </label>
+          
           <button
             onClick={() => loadBundleMembers(lineNumber === 1 ? line1Data : line2Data)}
-            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors"
+            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors shadow-md"
             disabled={isLoading || (lineNumber === 1 ? !line1Data.length : !line2Data.length)}
           >
             <FiSearch />
@@ -827,7 +970,7 @@ export default function ExcelTables() {
           
           <button
             onClick={() => setShowXmlUploader(true)}
-            className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition-colors"
+            className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition-colors shadow-md"
           >
             <FiFile />
             <span>Subir XML</span>
@@ -837,11 +980,11 @@ export default function ExcelTables() {
           {(lineNumber === 1 ? line1Data.length > 0 : line2Data.length > 0) && (
             <button
               onClick={() => assignToLine(lineNumber)}
-              className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition-colors"
+              className={`flex items-center gap-2 ${addMode ? 'bg-amber-500 hover:bg-amber-600' : 'bg-indigo-500 hover:bg-indigo-600'} text-white px-4 py-2 rounded transition-colors shadow-md`}
               disabled={isLoading}
             >
               <FiShare className="transform -rotate-90" />
-              <span>Enviar a línea {lineNumber}</span>
+              <span>{addMode ? 'Agregar a' : 'Reemplazar'} línea {lineNumber}</span>
             </button>
           )}
         </div>

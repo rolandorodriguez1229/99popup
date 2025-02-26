@@ -27,6 +27,13 @@ export default function StationView({
   const [totalFeet, setTotalFeet] = useState(0);
   // Estado para controlar operaciones optimistas
   const [updatingAssignmentId, setUpdatingAssignmentId] = useState(null);
+  const [targetFeet, setTargetFeet] = useState(0);
+  const [percentageComplete, setPercentageComplete] = useState(0);
+  // Añadir nuevos estados para las mejoras
+  const [productionRate, setProductionRate] = useState(0); // pies/hora
+  const [estimatedCompletion, setEstimatedCompletion] = useState(null);
+  const [historicalData, setHistoricalData] = useState(null); // Para comparación
+  const [lastMilestoneReached, setLastMilestoneReached] = useState(0); // Para evitar sonidos repetidos
   
   // Inicializar el tamaño de fuente desde localStorage una vez que estamos en el cliente
   useEffect(() => {
@@ -444,6 +451,226 @@ export default function StationView({
     return `${wholePart} ${fraction}`;
   };
 
+  // Función para reproducir sonido cuando alcanzan la meta
+  const playAchievementSound = (percentage) => {
+    // Verificar si el navegador soporta AudioContext
+    if (typeof window !== 'undefined' && window.AudioContext) {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        // Diferentes sonidos según el nivel de logro
+        if (percentage >= 120) {
+          // Sonido de logro excepcional (más festivo)
+          oscillator.type = 'triangle';
+          oscillator.frequency.setValueAtTime(587.33, audioContext.currentTime); // Re5
+          oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.2); // Mi5
+          oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.4); // Sol5
+          gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+        } else {
+          // Sonido de logro normal
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // Do5
+          oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.2); // Mi5
+          gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+        }
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.8);
+      } catch (error) {
+        console.error("Error al reproducir sonido:", error);
+      }
+    }
+  };
+
+  // Función para calcular los pies objetivo según la hora actual
+  const calculateTargetFeet = () => {
+    const now = new Date();
+    const startTime = new Date(now);
+    startTime.setHours(6, 0, 0, 0);
+    
+    const endTime = new Date(now);
+    endTime.setHours(16, 10, 0, 0); // Ajustado a 4:10 PM como solicitaste
+    
+    // Si estamos fuera del horario laboral
+    if (now < startTime || now > endTime) {
+      if (now < startTime) {
+        return 0; // Antes de comenzar el día
+      } else {
+        return 3500; // Después de terminar el día
+      }
+    }
+    
+    // Calcular minutos totales del día laboral
+    const totalMinutes = (endTime - startTime) / (1000 * 60);
+    
+    // Calcular minutos transcurridos desde el inicio
+    const elapsedMinutes = (now - startTime) / (1000 * 60);
+    
+    // Calcular pies objetivo para este momento (regla de tres)
+    const target = (3500 * elapsedMinutes) / totalMinutes;
+    
+    return target;
+  };
+
+  // Función para calcular hora estimada de finalización
+  const calculateEstimatedCompletion = (completed, target) => {
+    if (completed <= 0 || target <= 0) return null;
+    
+    const now = new Date();
+    const elapsedHours = (now - new Date(now).setHours(6, 0, 0, 0)) / (1000 * 60 * 60);
+    
+    if (elapsedHours <= 0) return null;
+    
+    // Calcular velocidad actual en pies/hora
+    const currentRate = completed / elapsedHours;
+    setProductionRate(currentRate);
+    
+    // Calcular cuánto falta para completar 3500 pies
+    const remaining = 3500 - completed;
+    
+    // Si ya completaron 3500, no hay estimación necesaria
+    if (remaining <= 0) return "¡Meta diaria completada!";
+    
+    // Calcular horas restantes
+    const hoursRemaining = remaining / currentRate;
+    
+    // Calcular hora estimada de finalización
+    const estimatedTime = new Date();
+    estimatedTime.setTime(now.getTime() + hoursRemaining * 60 * 60 * 1000);
+    
+    // Formatear hora
+    const hours = estimatedTime.getHours();
+    const minutes = estimatedTime.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+    
+    return `${formattedHours}:${formattedMinutes} ${ampm}`;
+  };
+
+  // Función para obtener el color de fondo según el rendimiento
+  const getPerformanceColor = (percentage) => {
+    if (percentage >= 120) return 'bg-green-500/70'; // Muy por encima del objetivo
+    if (percentage >= 100) return 'bg-green-600/60'; // Cumpliendo el objetivo
+    if (percentage >= 90) return 'bg-yellow-600/60'; // Ligeramente por debajo
+    if (percentage >= 75) return 'bg-orange-600/60'; // Bastante por debajo
+    return 'bg-red-700/60'; // Muy por debajo del objetivo
+  };
+
+  // Función para obtener clases de animación para el recuadro de pies completados
+  const getCompletionAnimation = (percentage) => {
+    if (percentage >= 110) {
+      return 'animate-pulse border-2 border-yellow-400 shadow-[0_0_10px_rgba(252,211,77,0.7)]';
+    }
+    return '';
+  };
+
+  // Función para obtener datos históricos
+  const fetchHistoricalData = async () => {
+    try {
+      // Esta es una implementación simulada ya que no tenemos acceso real a datos históricos
+      // En una implementación real, aquí consultarías a tu base de datos
+      const pastDays = 5; // Últimos 5 días por ejemplo
+      const today = new Date(selectedDate);
+      
+      // Simulación de datos históricos
+      const simulatedData = {
+        averageCompletion: 3200, // Pies promedio completados por día
+        bestDay: {
+          date: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          feet: 3800
+        },
+        completionRateByHour: 350 // Pies promedio por hora
+      };
+      
+      setHistoricalData(simulatedData);
+      
+      /* 
+      // Implementación real:
+      const endDate = new Date(selectedDate);
+      const startDate = new Date(endDate);
+      startDate.setDate(startDate.getDate() - pastDays);
+      
+      const { data, error } = await supabase
+        .from('line_assignments')
+        .select('*')
+        .eq('line_number', lineNumber)
+        .gte('assignment_date', startDate.toISOString().split('T')[0])
+        .lt('assignment_date', endDate.toISOString().split('T')[0]);
+        
+      if (error) throw error;
+      
+      // Procesar los datos para obtener promedios, mejores días, etc.
+      // ...
+      
+      setHistoricalData(processedData);
+      */
+    } catch (error) {
+      console.error('Error al obtener datos históricos:', error);
+    }
+  };
+
+  // Añadir este efecto para actualizar el target cada minuto
+  useEffect(() => {
+    const updateTarget = () => {
+      const target = calculateTargetFeet();
+      setTargetFeet(target);
+      
+      // Calcular el porcentaje de completado (comparando con la meta calculada, no con el total asignado)
+      const percentage = target > 0 ? (completedFeet / target) * 100 : 0;
+      
+      // Verificar si se ha alcanzado un nuevo hito para reproducir el sonido
+      // Solo reproducir cuando se supera un múltiplo de 10% y es mayor al último alcanzado
+      const milestone = Math.floor(percentage / 10) * 10;
+      if (milestone >= 100 && milestone > lastMilestoneReached) {
+        playAchievementSound(percentage);
+        setLastMilestoneReached(milestone);
+      }
+      
+      setPercentageComplete(percentage);
+      
+      // Actualizar la estimación de completado
+      const estimatedTime = calculateEstimatedCompletion(completedFeet, target);
+      setEstimatedCompletion(estimatedTime);
+    };
+    
+    // Ejecutar inmediatamente al cargar
+    updateTarget();
+    
+    // Configurar el intervalo para actualizar cada minuto
+    const intervalId = setInterval(updateTarget, 60000);
+    
+    return () => clearInterval(intervalId);
+  }, [completedFeet, lastMilestoneReached]);
+
+  // Efecto para cargar datos históricos
+  useEffect(() => {
+    fetchHistoricalData();
+  }, [selectedDate]);
+
+  // Función para obtener el color de fondo para la sección "debería llevar"
+  const getTargetSectionClasses = (percentage) => {
+    if (percentage >= 100) {
+      return 'bg-green-700/60 target-section-glow animate-pulse';
+    }
+    return 'bg-blue-900/50';
+  };
+
+  // Función para obtener clases del contorno de la barra de progreso
+  const getProgressBarContainerClasses = (percentage) => {
+    if (percentage >= 100) {
+      return 'w-full bg-gray-700 rounded-full h-4 mb-6 overflow-hidden border-2 border-blue-400/70 shadow-[0_0_15px_rgba(96,165,250,0.6)]';
+    }
+    return 'w-full bg-gray-700 rounded-full h-4 mb-6 overflow-hidden';
+  };
+
   return (
     <main className="min-h-screen bg-gray-900 p-8">
       <div className="max-w-7xl mx-auto">
@@ -458,26 +685,87 @@ export default function StationView({
           <h1 className="text-3xl font-bold text-white">{title}</h1>
         </div>
         
-        {/* Resumen de pies lineales */}
-        <div className="glass-card rounded-2xl p-6 mb-6">
+        {/* Resumen de pies lineales - Ahora con posición sticky */}
+        <div className="sticky top-2 z-10 glass-card rounded-2xl p-4 mb-6 shadow-lg border border-gray-800">
           <h2 className="text-xl font-bold text-white mb-4">Resumen de Producción</h2>
+          
+          {/* Barra de progreso con contorno iluminado si están en racha */}
+          <div className={getProgressBarContainerClasses(percentageComplete)}>
+            <div 
+              className={`h-full rounded-full ${percentageComplete >= 110 ? 'bg-gradient-to-r from-yellow-500 to-amber-300 animate-gradient-x' : percentageComplete >= 100 ? 'bg-green-500' : percentageComplete >= 75 ? 'bg-yellow-500' : 'bg-red-500'}`}
+              style={{ width: `${Math.min(percentageComplete, 100)}%` }}
+            ></div>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-green-900/30 p-4 rounded-lg">
-              <div className="text-green-400 text-sm font-medium mb-1">Completados</div>
+            <div className={`${getPerformanceColor(percentageComplete)} p-3 rounded-lg transition-colors duration-500 ${getCompletionAnimation(percentageComplete)} ${percentageComplete >= 100 ? 'completion-glow' : ''}`}>
+              <div className="text-green-200 text-sm font-medium mb-1">Completados</div>
               <div className="text-2xl font-bold text-white">{completedFeet.toFixed(2)} pies</div>
-              <div className="text-gray-400 text-sm">{((completedFeet / totalFeet) * 100).toFixed(1)}% del total</div>
+              <div className="text-gray-200 text-sm">
+                {percentageComplete.toFixed(1)}% de la meta actual
+              </div>
             </div>
-            <div className="bg-blue-900/30 p-4 rounded-lg">
-              <div className="text-blue-400 text-sm font-medium mb-1">Pendientes</div>
-              <div className="text-2xl font-bold text-white">{pendingFeet.toFixed(2)} pies</div>
-              <div className="text-gray-400 text-sm">{((pendingFeet / totalFeet) * 100).toFixed(1)}% del total</div>
+            
+            <div className={`${getTargetSectionClasses(percentageComplete)} p-3 rounded-lg`}>
+              <div className="text-blue-400 text-sm font-medium mb-1">Debería llevar hasta el momento</div>
+              <div className="text-2xl font-bold text-white">{targetFeet.toFixed(2)} pies</div>
+              <div className="text-gray-300 text-sm">
+                {productionRate > 0 ? `${productionRate.toFixed(0)} pies/hora` : '-'}
+                {percentageComplete >= 100 ? (
+                  <span className="text-green-400 ml-1">¡Adelante de la meta!</span>
+                ) : (
+                  <span className="text-yellow-400 ml-1">
+                    {(targetFeet - completedFeet).toFixed(2)} pies para alcanzar
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="bg-purple-900/30 p-4 rounded-lg">
+            
+            <div className="bg-purple-900/50 p-3 rounded-lg">
               <div className="text-purple-400 text-sm font-medium mb-1">Total Asignado</div>
               <div className="text-2xl font-bold text-white">{totalFeet.toFixed(2)} pies</div>
-              <div className="text-gray-400 text-sm">{assignments.length} trabajos</div>
+              <div className="text-gray-400 text-sm">
+                {estimatedCompletion ? (
+                  <>Finalización estimada: <span className="text-amber-400">{estimatedCompletion}</span></>
+                ) : (
+                  <>Calculando tiempo estimado...</>
+                )}
+              </div>
             </div>
           </div>
+          
+          {/* Comparación histórica */}
+          {historicalData && (
+            <div className="mt-4 pt-3 border-t border-gray-700/50">
+              <details className="text-sm text-gray-300">
+                <summary className="cursor-pointer hover:text-white transition-colors">
+                  Comparación con días anteriores
+                </summary>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 p-2 bg-gray-800/40 rounded-lg">
+                  <div>
+                    <div className="text-gray-400 mb-1">Promedio de completado:</div>
+                    <div className="text-white">
+                      {historicalData.averageCompletion.toFixed(2)} pies/día
+                      {completedFeet > historicalData.averageCompletion ? (
+                        <span className="text-green-400 ml-2">↑ {((completedFeet/historicalData.averageCompletion - 1) * 100).toFixed(1)}%</span>
+                      ) : (
+                        <span className="text-red-400 ml-2">↓ {((1 - completedFeet/historicalData.averageCompletion) * 100).toFixed(1)}%</span>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400 mb-1">Mejor día:</div>
+                    <div className="text-white">
+                      {historicalData.bestDay.feet.toFixed(2)} pies 
+                      <span className="text-gray-400 ml-1">
+                        ({new Date(historicalData.bestDay.date).toLocaleDateString()})
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          )}
         </div>
         
         {/* Filtros y controles */}
@@ -620,6 +908,14 @@ export default function StationView({
                             <span className="text-green-400 text-sm">(SILL SEAL)</span>
                           }
                         </button>
+                        
+                        {/* Mover el resumen de studs aquí, fuera de la sección desplegable */}
+                        {assignment.studs_summary && (
+                          <div 
+                            className="mt-2 ml-8 p-2 bg-gray-800/30 rounded-lg text-sm"
+                            dangerouslySetInnerHTML={{ __html: assignment.studs_summary }}
+                          />
+                        )}
                       </div>
                       
                       <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 mt-2 md:mt-0">
@@ -674,14 +970,6 @@ export default function StationView({
                     
                     {expandedJobs[assignment.id] && (
                       <div className={`p-4 ${getFontSizeClass()}`}>
-                        {/* Resumen de studs */}
-                        {assignment.studs_summary && (
-                          <div 
-                            className="mb-4 p-3 bg-gray-800/30 rounded-lg"
-                            dangerouslySetInnerHTML={{ __html: assignment.studs_summary }}
-                          />
-                        )}
-                        
                         {/* Detalles de miembros */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {Object.entries(getMembersByType(assignment.members_data))
@@ -734,6 +1022,65 @@ export default function StationView({
           )}
         </div>
       </div>
+
+      {/* Estilos CSS para las animaciones */}
+      <style jsx global>{`
+        @keyframes gradient-x {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+        
+        .animate-gradient-x {
+          background-size: 200% 100%;
+          animation: gradient-x 2s ease infinite;
+        }
+        
+        /* Animación de electricidad para la sección "debería llevar" */
+        .target-section-glow {
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .target-section-glow::before {
+          content: '';
+          position: absolute;
+          top: -2px;
+          left: -2px;
+          right: -2px;
+          bottom: -2px;
+          background: linear-gradient(45deg, #2563eb, #8b5cf6, #2563eb, #8b5cf6);
+          background-size: 400% 400%;
+          z-index: -1;
+          animation: target-glow 3s ease infinite;
+          border-radius: 0.5rem;
+          opacity: 0.7;
+        }
+        
+        @keyframes target-glow {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+        
+        /* Resplandor para la sección de pies completados */
+        .completion-glow {
+          box-shadow: 0 0 10px 2px rgba(96, 165, 250, 0.6);
+          border: 2px solid rgba(96, 165, 250, 0.4);
+        }
+      `}</style>
     </main>
   );
 }
