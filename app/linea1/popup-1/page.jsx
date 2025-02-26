@@ -34,7 +34,7 @@ export default function Station99Page() {
   
   return (
     <StationView 
-      stationName="popupo"    // Este valor será "99", "popup", "ventanas" o "mesa"
+      stationName="popup"    // Este valor será "99", "popup", "ventanas" o "mesa"
       lineNumber={1}      // 1 o 2 dependiendo de la línea 
       title="PopUp #1"        // Título que se mostrará en la página
     />
