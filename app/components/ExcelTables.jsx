@@ -553,14 +553,27 @@ export default function ExcelTables() {
   };
   
   // Modificación de la función assignToLine para primero eliminar los trabajos existentes
+  // Modificación mejorada de la función assignToLine
   const assignToLine = async (lineNumber) => {
     setIsLoading(true);
     try {
       const today = new Date().toISOString().split('T')[0];
       const tableData = lineNumber === 1 ? line1Data : line2Data;
       
-      // Si no estamos en modo agregar, primero eliminamos las asignaciones existentes
-      if (!addMode) {
+      // Si estamos en modo agregar, primero obtenemos las asignaciones existentes
+      // para evitar duplicados
+      let existingAssignments = [];
+      if (addMode) {
+        const { data, error } = await supabase
+          .from('line_assignments')
+          .select('job_number, bundle')
+          .eq('line_number', lineNumber)
+          .eq('assignment_date', today);
+        
+        if (error) throw error;
+        existingAssignments = data || [];
+      } else {
+        // Si no estamos en modo agregar, eliminamos las asignaciones existentes
         const { error: deleteError } = await supabase
           .from('line_assignments')
           .delete()
@@ -570,18 +583,34 @@ export default function ExcelTables() {
         if (deleteError) throw deleteError;
       }
       
+      // Filtrar para añadir solo trabajos que no existen (en modo agregar)
+      const filteredData = addMode 
+        ? tableData.filter(row => 
+            !existingAssignments.some(existing => 
+              existing.job_number === row.jobNumber && 
+              existing.bundle === row.bundle
+            )
+          )
+        : tableData;
+        
+      if (addMode && filteredData.length === 0) {
+        alert('No hay nuevos trabajos para añadir. Todos ya existen en la línea.');
+        setIsLoading(false);
+        return;
+      }
+      
       // Preparar datos completos incluyendo miembros
-      const completeData = tableData.map(row => {
+      const completeData = filteredData.map(row => {
         const key = `${row.jobNumber}-${row.bundle}`;
         return {
-          jobNumber: row.jobNumber,
+          job_number: row.jobNumber,
           bundle: row.bundle,
-          linealFeet: row.linealFeet,
-          members: bundleMembers[key] || [],
-          hasSillSeal: bundleMembers[key] ? hasSillSeal(bundleMembers[key]) : false,
-          studsSummary: bundleMembers[key] ? getStudsSummary(bundleMembers[key]) : "",
-          lineNumber: lineNumber,
-          date: today,
+          lineal_feet: row.linealFeet,
+          members_data: bundleMembers[key] || [],
+          has_sill_seal: bundleMembers[key] ? hasSillSeal(bundleMembers[key]) : false,
+          studs_summary: bundleMembers[key] ? getStudsSummary(bundleMembers[key]) : "",
+          line_number: lineNumber,
+          assignment_date: today,
           completed: false,
           stations: ["99", "popup", "ventanas", "mesa"].map(station => ({
             name: station,
@@ -592,29 +621,25 @@ export default function ExcelTables() {
       });
       
       // Guardar en Supabase
+      let successCount = 0;
       for (const item of completeData) {
         const { error } = await supabase
           .from('line_assignments')
-          .insert({
-            job_number: item.jobNumber,
-            bundle: item.bundle,
-            lineal_feet: item.linealFeet,
-            members_data: item.members,
-            has_sill_seal: item.hasSillSeal,
-            studs_summary: item.studsSummary,
-            line_number: item.lineNumber,
-            assignment_date: item.date,
-            completed: item.completed,
-            stations: item.stations
-          });
+          .insert(item);
         
         if (error) {
           console.error('Error al guardar asignación:', error);
-          throw error;
+        } else {
+          successCount++;
         }
       }
       
-      alert(`¡Datos ${addMode ? 'añadidos' : 'enviados'} exitosamente a Línea ${lineNumber}!`);
+      if (successCount > 0) {
+        alert(`¡${successCount} trabajos ${addMode ? 'añadidos' : 'enviados'} exitosamente a Línea ${lineNumber}!`);
+      } else if (completeData.length > 0) {
+        alert('No se pudo guardar ningún trabajo. Consulta la consola para más detalles.');
+      }
+      
       // Reiniciar el modo después de enviar
       setAddMode(false);
     } catch (error) {
