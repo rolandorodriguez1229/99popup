@@ -37,10 +37,12 @@ export default function AdminContent({
           }
         </div>
       </div>
+      
       {/* Tablas de Excel */}
       <div className="mb-8">
         <ExcelTables />
       </div>
+      
       {/* Panel de Lista de Trabajos Colapsable */}
       <div className="glass-card rounded-2xl overflow-hidden">
         <button
@@ -58,27 +60,27 @@ export default function AdminContent({
         )}
       </div>
 
-      {/* Panel de Acciones Administrativas - NUEVO */}
-{role === 'super' && ( // Solo visible para super administrador
-  <div className="glass-card rounded-2xl overflow-hidden mt-8">
-    <div className="p-6">
-      <h2 className="text-xl font-semibold text-white mb-6">Acciones Administrativas</h2>
-      
-      <div className="bg-gray-800/50 p-4 rounded-lg border border-red-500/30">
-        <h3 className="text-lg font-medium text-white mb-3">Zona de Peligro</h3>
-        <p className="text-gray-300 mb-4">
-          Estas acciones son irreversibles y pueden afectar gravemente al funcionamiento 
-          del sistema. Úselas sólo si está seguro de lo que hace.
-        </p>
-        
-        <div className="flex flex-wrap gap-4">
-          <DeleteAllDataButton />
-          {/* Aquí puedes añadir más botones de acciones administrativas peligrosas */}
+      {/* Panel de Acciones Administrativas */}
+      {role === 'super' && (
+        <div className="glass-card rounded-2xl overflow-hidden mt-8">
+          <div className="p-6">
+            <h2 className="text-xl font-semibold text-white mb-6">Acciones Administrativas</h2>
+            
+            <div className="bg-gray-800/50 p-4 rounded-lg border border-red-500/30">
+              <h3 className="text-lg font-medium text-white mb-3">Zona de Peligro</h3>
+              <p className="text-gray-300 mb-4">
+                Estas acciones son irreversibles y pueden afectar gravemente al funcionamiento 
+                del sistema. Úselas sólo si está seguro de lo que hace.
+              </p>
+              
+              <div className="flex flex-wrap gap-4">
+                <DeleteAllDataButton />
+                {/* Aquí puedes añadir más botones de acciones administrativas peligrosas */}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-  }
+      )}
     </>
   );
 }
