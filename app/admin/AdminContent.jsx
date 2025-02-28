@@ -78,7 +78,7 @@ export default function AdminContent({
       </div>
     </div>
   </div>
-      
+  }
     </>
   );
 }
