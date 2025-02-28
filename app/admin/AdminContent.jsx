@@ -43,7 +43,7 @@ export default function AdminContent({
         <ExcelTables />
       </div>
       
-      {/* Panel de Lista de Trabajos Colapsable */}
+      {/* Panel de Lista de Trabajos Colapsable 1 */}
       <div className="glass-card rounded-2xl overflow-hidden">
         <button
           onClick={() => setIsJobsListExpanded(!isJobsListExpanded)}
