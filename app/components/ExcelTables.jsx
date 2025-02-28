@@ -26,6 +26,8 @@ export default function ExcelTables() {
   const [availableTypes, setAvailableTypes] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [expandedRows, setExpandedRows] = useState({});
+  // Estado para controlar si estamos en modo "agregar" o "reemplazar"
+  const [addMode, setAddMode] = useState(false);
   
   // Inicializar los tipos seleccionados desde localStorage
   useEffect(() => {
@@ -459,51 +461,67 @@ export default function ExcelTables() {
   const addNonDuplicateJobs = async (file, lineNumber) => {
     setIsLoading(true);
     try {
-      const data = await readExcelFile(file);
-      if (!data) return;
-      
-      // Formatear datos nuevos
-      const newJobs = data.map(row => ({
-        jobNumber: row.Job ? row.Job.toString() : '',
-        bundle: row.Bundle ? row.Bundle.toString() : '',
-        linealFeet: row['Lineal Feet'] ? parseFloat(row['Lineal Feet']) : 0,
-      }));
-      
-      // Obtener trabajos actuales
-      const currentJobs = lineNumber === 1 ? line1Data : line2Data;
-      
-      // Filtrar para añadir solo trabajos que no existen
-      const nonDuplicateJobs = newJobs.filter(newJob => 
-        !currentJobs.some(currentJob => 
-          currentJob.jobNumber === newJob.jobNumber && 
-          currentJob.bundle === newJob.bundle
-        )
-      );
-      
-      if (nonDuplicateJobs.length === 0) {
-        alert('No hay nuevos trabajos para añadir. Todos ya existen en la tabla.');
+      // Esta función no está definida en el código original
+      // Debería ser una función que lee un archivo Excel y devuelve los datos
+      // Por ahora, usaremos una función similar a handleFileUpload
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        if (!jsonData || jsonData.length === 0) {
+          setIsLoading(false);
+          alert('No se encontraron datos válidos en el archivo.');
+          return;
+        }
+        
+        // Formatear datos nuevos
+        const newJobs = jsonData.map(row => ({
+          jobNumber: row.Job ? row.Job.toString() : '',
+          bundle: row.Bundle ? row.Bundle.toString() : '',
+          linealFeet: row['Lineal Feet'] ? parseFloat(row['Lineal Feet']) : 0,
+        }));
+        
+        // Obtener trabajos actuales
+        const currentJobs = lineNumber === 1 ? line1Data : line2Data;
+        
+        // Filtrar para añadir solo trabajos que no existen
+        const nonDuplicateJobs = newJobs.filter(newJob => 
+          !currentJobs.some(currentJob => 
+            currentJob.jobNumber === newJob.jobNumber && 
+            currentJob.bundle === newJob.bundle
+          )
+        );
+        
+        if (nonDuplicateJobs.length === 0) {
+          alert('No hay nuevos trabajos para añadir. Todos ya existen en la tabla.');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Combinar trabajos existentes con nuevos
+        const combinedJobs = [...currentJobs, ...nonDuplicateJobs];
+        
+        // Actualizar estado
+        if (lineNumber === 1) {
+          setLine1Data(combinedJobs);
+        } else {
+          setLine2Data(combinedJobs);
+        }
+        
+        // Cargar miembros para los nuevos trabajos
+        await loadBundleMembers(nonDuplicateJobs);
+        
+        alert(`¡Se han añadido ${nonDuplicateJobs.length} nuevos trabajos a la tabla!`);
         setIsLoading(false);
-        return;
-      }
+      };
       
-      // Combinar trabajos existentes con nuevos
-      const combinedJobs = [...currentJobs, ...nonDuplicateJobs];
-      
-      // Actualizar estado
-      if (lineNumber === 1) {
-        setLine1Data(combinedJobs);
-      } else {
-        setLine2Data(combinedJobs);
-      }
-      
-      // Cargar miembros para los nuevos trabajos
-      await loadBundleMembers(nonDuplicateJobs);
-      
-      alert(`¡Se han añadido ${nonDuplicateJobs.length} nuevos trabajos a la tabla!`);
+      reader.readAsArrayBuffer(file);
     } catch (error) {
       console.error('Error al añadir trabajos:', error);
       alert('Error al añadir trabajos. Por favor intente nuevamente.');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -791,4 +809,525 @@ export default function ExcelTables() {
       <div className="mb-4">
         <div className="flex flex-col md:flex-row gap-4 mb-4">
           {/* Control de tamaño de fuente */}
-          <div
+          <div className="flex items-center gap-3 bg-gray-800/50 rounded-lg p-2">
+            <span className="text-gray-300 mr-2">Tamaño de texto:</span>
+            <button
+              onClick={() => setFontSize(prev => Math.max(1, prev - 1))}
+              className="text-green-500 hover:text-green-400 disabled:text-gray-500"
+              disabled={fontSize <= 1}
+            >
+              <FiMinus size={20} />
+            </button>
+            <span className="text-white min-w-[1.5rem] text-center">{fontSize}</span>
+            <button
+              onClick={() => setFontSize(prev => Math.min(5, prev + 1))}
+              className="text-green-500 hover:text-green-400 disabled:text-gray-500"
+              disabled={fontSize >= 5}
+            >
+              <FiPlus size={20} />
+            </button>
+          </div>
+        </div>
+        
+        <button
+          onClick={() => toggleFilters(lineNumber)}
+          className="flex items-center gap-2 text-gray-200 hover:text-white bg-gray-800/50 px-4 py-2 rounded-lg w-full"
+        >
+          <FiFilter />
+          <span>Filtros</span>
+          {expandedFilters[lineNumber] ? <FiChevronDown /> : <FiChevronRight />}
+        </button>
+        {expandedFilters[lineNumber] && (
+          <div className="mt-2 p-4 bg-gray-800/30 rounded-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-gray-300">Tipos de miembros:</h4>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSelectAllTypes}
+                  className="text-sm text-blue-400 hover:text-blue-300"
+                >
+                  Seleccionar todos
+                </button>
+                <span className="text-gray-600">|</span>
+                <button
+                  onClick={handleDeselectAllTypes}
+                  className="text-sm text-blue-400 hover:text-blue-300"
+                >
+                  Deseleccionar todos
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {availableTypes.map(type => (
+                <label key={type} className="flex items-center gap-2 text-gray-400">
+                  <input
+                    type="checkbox"
+                    checked={selectedTypes.includes(type)}
+                    onChange={() => handleTypeSelect(type)}
+                    className="rounded bg-gray-700 border-gray-600"
+                  />
+                  {type}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const toggleRowExpanded = (lineNumber, index) => {
+    const key = `line${lineNumber}-${index}`;
+    setExpandedRows(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const renderTypeFilter = () => {
+    return (
+      <div className="mb-6 glass-card rounded-2xl p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white font-semibold">Filtrar por Tipo</h3>
+          <div className="flex gap-3">
+            <button 
+              onClick={handleSelectAllTypes}
+              className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              Seleccionar todo
+            </button>
+            <button 
+              onClick={handleDeselectAllTypes}
+              className="text-xs text-red-400 hover:text-red-300 transition-colors"
+            >
+              Deseleccionar todo
+            </button>
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-2">
+          {availableTypes.map(type => (
+            <button
+              key={type}
+              onClick={() => handleTypeSelect(type)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                selectedTypes.includes(type) 
+                  ? 'bg-green-700 text-white' 
+                  : 'bg-gray-700 text-gray-300'
+              }`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderTable = (lineNumber) => {
+    const tableData = lineNumber === 1 ? line1Data : line2Data;
+    
+    return (
+      <div className="glass-card rounded-2xl p-6 mb-6 shadow-lg">
+        <h3 className="text-xl font-bold text-white mb-6">Línea {lineNumber}</h3>
+        
+        {/* Filtro de tipos en la parte superior */}
+        <div className="mb-6">
+          <button
+            onClick={() => toggleFilters(lineNumber)}
+            className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors mb-2"
+          >
+            <FiFilter />
+            <span>Filtros {expandedFilters[lineNumber] ? '(ocultar)' : '(mostrar)'}</span>
+          </button>
+          
+          {expandedFilters[lineNumber] && renderTypeFilter()}
+        </div>
+        
+        {renderFiltersPanel(lineNumber)}
+
+        {tableData.length > 0 && (
+          <div className="overflow-x-auto mt-4">
+            <DragDropContext onDragEnd={(result) => handleDragEnd(result, lineNumber)}>
+              <Droppable droppableId={`table-${lineNumber}`}>
+                {(provided) => (
+                  <table 
+                    className="w-full border-collapse"
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                  >
+                    <thead className="bg-gray-800/50">
+                      <tr>
+                        <th className="p-3"></th> {/* Columna para acciones (eliminar) */}
+                        {columns.map(column => (
+                          <th 
+                            key={column.accessorKey} 
+                            className={`p-3 text-left text-gray-300 font-medium ${getFontSizeClass()}`}
+                          >
+                            {column.header}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tableData.map((row, index) => {
+                        // Obtener los miembros del bundle para esta fila
+                        const bundleKey = `${row.jobNumber}-${row.bundle}`;
+                        const members = bundleMembers[bundleKey];
+                        const studsSummary = getStudsSummary(members);
+                        const hasSillSealFlag = members ? hasSillSeal(members) : false;
+                        const rowKey = `line${lineNumber}-${index}`;
+                        const isExpanded = expandedRows[rowKey];
+                        
+                        return (
+                          <React.Fragment key={`line${lineNumber}-${row.jobNumber}-${row.bundle}-${index}`}>
+                            <Draggable 
+                              draggableId={`line${lineNumber}-${row.jobNumber}-${row.bundle}-${index}`} 
+                              index={index}
+                            >
+                              {(provided) => (
+                                <tr 
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  className="border-b border-gray-700/50 hover:bg-gray-800/30"
+                                >
+                                  <td className="p-3 text-gray-400">
+                                    <button
+                                      onClick={() => handleDeleteRow(lineNumber, index)}
+                                      className="text-red-500 hover:text-red-400 transition-colors"
+                                    >
+                                      <FiTrash2 />
+                                    </button>
+                                  </td>
+                                  {columns.map(column => (
+                                    <td 
+                                      key={column.accessorKey} 
+                                      className={`p-3 ${getFontSizeClass()} ${column.accessorKey === 'jobNumber' ? 'cursor-move' : ''}`}
+                                      onClick={() => {
+                                        if (column.accessorKey === 'bundle' && members) {
+                                          toggleRowExpanded(lineNumber, index);
+                                          return;
+                                        }
+                                        
+                                        if (column.accessorKey === 'jobNumber') {
+                                          return;
+                                        }
+                                        
+                                        if (editingCell?.rowIndex === index && editingCell?.columnId === column.accessorKey) {
+                                          return;
+                                        }
+                                        
+                                        setEditingCell({ rowIndex: index, columnId: column.accessorKey, lineNumber });
+                                        setEditValue(row[column.accessorKey]);
+                                      }}
+                                      {...(column.accessorKey === 'jobNumber' ? provided.dragHandleProps : {})}
+                                    >
+                                      {editingCell?.rowIndex === index && editingCell?.columnId === column.accessorKey ? (
+                                        <input
+                                          type="text"
+                                          value={editValue}
+                                          onChange={(e) => setEditValue(e.target.value)}
+                                          onBlur={() => handleCellEdit(editValue, { index, lineNumber }, { id: column.accessorKey })}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                              handleCellEdit(editValue, { index, lineNumber }, { id: column.accessorKey });
+                                            } else if (e.key === 'Escape') {
+                                              setEditingCell(null);
+                                            }
+                                          }}
+                                          className="bg-gray-700 text-white p-1 w-full outline-none rounded"
+                                          autoFocus
+                                        />
+                                      ) : (
+                                        <>
+                                          {column.accessorKey === 'bundle' ? (
+                                            <div className="flex items-center gap-2">
+                                              {members ? (
+                                                <button 
+                                                  className="text-blue-400 hover:text-blue-300 transition-colors"
+                                                  onClick={() => toggleRowExpanded(lineNumber, index)}
+                                                >
+                                                  {isExpanded ? <FiChevronDown /> : <FiChevronRight />}
+                                                </button>
+                                              ) : null}
+                                              <span className="font-medium">{row[column.accessorKey]}</span>
+                                              {members && (
+                                                <>
+                                                  {hasSillSealFlag && (
+                                                    <span className="text-green-400 font-medium">SILL SEAL</span>
+                                                  )}
+                                                  {studsSummary && (
+                                                    <div 
+                                                      className="text-sm ml-2" 
+                                                      dangerouslySetInnerHTML={{ __html: studsSummary }}
+                                                    />
+                                                  )}
+                                                </>
+                                              )}
+                                            </div>
+                                          ) : (
+                                            <span>{row[column.accessorKey]}</span>
+                                          )}
+                                        </>
+                                      )}
+                                    </td>
+                                  ))}
+                                </tr>
+                              )}
+                            </Draggable>
+                            
+                            {/* Panel expandible con los detalles del bundle - EXACTAMENTE como en JobsList */}
+                            {isExpanded && members && (
+                              <tr className="bg-gray-800/30">
+                                <td colSpan={columns.length + 1} className="p-0">
+                                  <div className="p-4 border-l-4 border-blue-500">
+                                    <div className="mb-3">
+                                      <h4 className="text-white font-semibold mb-2">
+                                        Detalles del Bundle: {row.bundle} (Job: {row.jobNumber})
+                                      </h4>
+                                      <p className="text-gray-400 text-sm">
+                                        {members.length} miembros en total
+                                      </p>
+                                    </div>
+                                    
+                                    {/* Agrupar miembros por tipo - ESTRUCTURA EN 3 COLUMNAS */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                      {Object.entries(groupMembersByType(members))
+                                        .filter(([type]) => selectedTypes.length === 0 || selectedTypes.includes(type))
+                                        .map(([type, typeMembers]) => (
+                                          <div key={type} className="bg-gray-800/50 rounded-lg p-3">
+                                            <button
+                                              onClick={() => toggleType(bundleKey, type)}
+                                              className="w-full flex items-center justify-between gap-2 text-green-500 font-medium text-lg border-b border-gray-700/50 pb-2"
+                                            >
+                                              <span>{type} ({typeMembers.length})</span>
+                                              {expandedTypes[`${bundleKey}-${type}`] ? <FiChevronDown /> : <FiChevronRight />}
+                                            </button>
+                                            
+                                            {expandedTypes[`${bundleKey}-${type}`] && (
+                                              <div className="space-y-1 mt-2">
+                                                {/* Agrupar por descripción y longitud */}
+                                                {groupMembersByDescription(typeMembers).map((group, idx) => (
+                                                  <div key={idx} className={`text-gray-300 ${getFontSizeClass()} border-t border-gray-700/30 pt-2 first:border-0 first:pt-0`}>
+                                                    <div className="flex items-baseline gap-2">
+                                                      <span className="text-green-400 font-medium">
+                                                        {group.count} x {inchesToFeetFormat(group.length)}
+                                                      </span>
+                                                      <span className={getDescriptionColor(group.description)}>
+                                                        {group.description}
+                                                      </span>
+                                                    </div>
+                                                    <div className={`pl-4 ${getFontSizeClass(2)}`}>
+                                                      <div className={getDescriptionColor(group.description)}>
+                                                        {group.length}″
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        ))}
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                      {provided.placeholder}
+                    </tbody>
+                  </table>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </div>
+        )}
+        
+        <div className="flex flex-wrap gap-4 mt-6">
+          {/* Botón para obtener la tabla del día */}
+          <button
+            onClick={() => fetchTodayAssignments(lineNumber)}
+            className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded transition-colors shadow-md"
+            disabled={isLoading}
+          >
+            <FiCalendar />
+            <span>Obtener tabla del día</span>
+          </button>
+          
+          {/* Botón para subir Excel (normal o agregar) */}
+          <label className="flex items-center gap-2 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors shadow-md">
+            <FiUpload />
+            <span>Subir Excel</span>
+            <input
+              type="file"
+              className="hidden"
+              accept=".xlsx,.xls"
+              onChange={(e) => handleFileUpload(e.target.files[0], lineNumber)}
+            />
+          </label>
+          
+          {/* Botón para agregar trabajos */}
+          <label className="flex items-center gap-2 cursor-pointer bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded transition-colors shadow-md">
+            <FiPlus />
+            <span>Agregar trabajos</span>
+            <input
+              type="file"
+              className="hidden"
+              accept=".xlsx,.xls"
+              onChange={(e) => {
+                addNonDuplicateJobs(e.target.files[0], lineNumber);
+                setAddMode(true);
+              }}
+            />
+          </label>
+          
+          <button
+            onClick={() => setShowXmlUploader(true)}
+            className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition-colors shadow-md"
+          >
+            <FiFile />
+            <span>Subir XML</span>
+          </button>
+          
+          {/* Botón para enviar a línea */}
+          {(lineNumber === 1 ? line1Data.length > 0 : line2Data.length > 0) && (
+            <button
+              onClick={() => assignToLine(lineNumber)}
+              className={`flex items-center gap-2 ${addMode ? 'bg-amber-500 hover:bg-amber-600' : 'bg-indigo-500 hover:bg-indigo-600'} text-white px-4 py-2 rounded transition-colors shadow-md`}
+              disabled={isLoading}
+            >
+              <FiShare className="transform -rotate-90" />
+              <span>{addMode ? 'Agregar a' : 'Reemplazar'} línea {lineNumber}</span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="container mx-auto p-4">
+      {/* Botón global de búsqueda y deshacer */}
+      {(line1Data.length > 0 || line2Data.length > 0) && (
+        <div className="mb-6 flex justify-center gap-4">
+          <button
+            onClick={searchAllMatches}
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg text-lg font-medium transition-colors shadow-lg"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                <span>Buscando coincidencias...</span>
+              </>
+            ) : (
+              <>
+                <FiSearch />
+                <span>Buscar coincidencias para todas las tablas</span>
+              </>
+            )}
+          </button>
+          
+          {/* Botón de deshacer */}
+          {actionHistory.length > 0 && (
+            <button
+              onClick={handleUndo}
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-lg text-lg font-medium transition-colors shadow-lg"
+            >
+              <FiRotateCcw />
+              <span>Deshacer</span>
+            </button>
+          )}
+        </div>
+      )}
+      
+      {renderTable(1)}
+      {renderTable(2)}
+      {showXmlUploader && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-lg w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-white">Subir carpeta de archivos XML</h3>
+              <button
+                onClick={() => setShowXmlUploader(false)}
+                className="text-gray-400 hover:text-gray-200"
+              >
+                <FiX size={24} />
+              </button>
+            </div>
+            <FileUploader />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Función auxiliar para agrupar miembros por tipo (copiada de JobsList)
+const groupMembersByType = (members) => {
+  const typeGroups = {};
+  
+  members.forEach(member => {
+    const type = member.type || 'Sin tipo';
+    if (!typeGroups[type]) typeGroups[type] = [];
+    typeGroups[type].push(member);
+  });
+  
+  return typeGroups;
+};
+
+// Función auxiliar para agrupar miembros por descripción y longitud (copiada de JobsList)
+const groupMembersByDescription = (members) => {
+  const groups = {};
+  
+  members.forEach(member => {
+    const key = `${member.description}-${member.length}`;
+    if (!groups[key]) {
+      groups[key] = {
+        description: member.description,
+        length: member.length,
+        count: 0
+      };
+    }
+    groups[key].count++;
+  });
+  
+  return Object.values(groups);
+};
+
+// Función para convertir pulgadas a formato pies-pulgadas-dieciseisavos simplificado
+const inchesToFeetFormat = (inches) => {
+  if (!inches) return '';
+  
+  const totalInches = parseFloat(inches);
+  if (isNaN(totalInches)) return '';
+  
+  // Calcular pies, pulgadas y dieciseisavos
+  let feet = Math.floor(totalInches / 12);
+  const remainingInches = Math.floor(totalInches % 12);
+  
+  // Calcular dieciseisavos (parte decimal de las pulgadas * 16)
+  const decimalPart = totalInches % 1;
+  const sixteenths = Math.round(decimalPart * 16);
+  
+  // Ajustar en caso de que sixteenths sea 16 (redondeo hacia arriba)
+  let adjustedInches = remainingInches;
+  let adjustedSixteenths = sixteenths;
+  
+  if (adjustedSixteenths === 16) {
+    adjustedSixteenths = 0;
+    adjustedInches += 1;
+    
+    // Si el ajuste hace que las pulgadas sean 12, incrementar los pies
+    if (adjustedInches === 12) {
+      adjustedInches = 0;
+      feet += 1;
+    }
+  }
+  
+  // Formatear con el formato simple requerido: pies-pulgadas-dieciseisavos
+  // Sin símbolos, sin fracciones, solo números separados por guiones
+  return `${feet}-${adjustedInches}-${adjustedSixteenths}`;
+};
