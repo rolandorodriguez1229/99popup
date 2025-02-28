@@ -29,6 +29,7 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: checkError.message }), { status: 500 });
     }
 
+    // Si el bundle ya existe y no queremos reemplazarlo, devolvemos un estado de "skipped"
     if (existingBundle && !replaceExisting) {
       return new Response(JSON.stringify({ 
         status: 'exists',
