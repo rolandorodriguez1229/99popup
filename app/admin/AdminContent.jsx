@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { FiArrowLeft, FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import JobsList from '@/components/JobsList';
 import ExcelTables from '@/components/ExcelTables';
+import DeleteAllDataButton from '@/components/DeleteAllDataButton';
 
 export default function AdminContent({ 
   isJobsListExpanded, 
