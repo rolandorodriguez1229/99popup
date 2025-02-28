@@ -1,7 +1,6 @@
-'use client'; // Importante para componentes que manejan eventos
-
+'use client';
 import { useState } from 'react';
-import { FiUpload, FiCheckCircle, FiXCircle, FiInfo } from 'react-icons/fi';
+import { FiUpload, FiCheckCircle, FiXCircle, FiInfo, FiSkipForward } from 'react-icons/fi';
 
 export default function FileUploader() {
   const [files, setFiles] = useState(null);
@@ -14,6 +13,7 @@ export default function FileUploader() {
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [xmlFiles, setXmlFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [stats, setStats] = useState({ success: 0, skipped: 0, errors: 0 });
 
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files).filter(file => file.name.endsWith('.xml'));
@@ -24,6 +24,7 @@ export default function FileUploader() {
     setProgress(0);
     setProcessedFiles(0);
     setCurrentFileIndex(0);
+    setStats({ success: 0, skipped: 0, errors: 0 });
   };
 
   const uploadFile = async (file, replaceExisting = false) => {
@@ -40,12 +41,10 @@ export default function FileUploader() {
       const result = await response.json();
 
       if (response.status === 409) {
-        setPendingFile(file);
-        setConfirmReplace({
-          jobNumber: result.jobNumber,
-          bundleName: result.bundleName
-        });
-        return 'pending';
+        // Si el bundle ya existe, ahora automáticamente lo saltamos
+        // en lugar de pedir confirmación
+        console.log(`Bundle ya existe: ${result.jobNumber}-${result.bundleName}, saltando...`);
+        return 'skipped';
       }
 
       if (!response.ok) {
@@ -60,8 +59,7 @@ export default function FileUploader() {
   };
 
   const continueUpload = async () => {
-    let successCount = 0;
-    let errorCount = 0;
+    let localStats = { ...stats };
     
     setIsUploading(true);
     
@@ -71,23 +69,22 @@ export default function FileUploader() {
         const file = xmlFiles[i];
         
         const result = await uploadFile(file);
+        
         if (result === 'success') {
-          successCount++;
-        } else if (result === 'pending') {
-          setProcessedFiles(i);
-          setProgress((i / xmlFiles.length) * 100);
-          setIsUploading(false);
-          return; // Pausamos el proceso hasta la confirmación
+          localStats.success++;
+        } else if (result === 'skipped') {
+          localStats.skipped++;
         } else {
-          errorCount++;
+          localStats.errors++;
         }
 
+        setStats(localStats);
         setProcessedFiles(i + 1);
         setProgress(((i + 1) / xmlFiles.length) * 100);
       }
 
       // Si llegamos aquí, hemos terminado con todos los archivos
-      setUploadStatus(`Proceso completado. ${successCount} archivos subidos correctamente. ${errorCount} errores.`);
+      setUploadStatus(`Proceso completado. ${localStats.success} archivos subidos, ${localStats.skipped} omitidos, ${localStats.errors} errores.`);
       setCurrentFileIndex(0); // Reseteamos para futuras subidas
     } catch (error) {
       console.error('Error en continueUpload:', error);
@@ -107,57 +104,10 @@ export default function FileUploader() {
     setProcessedFiles(0);
     setProgress(0);
     setCurrentFileIndex(0);
+    setStats({ success: 0, skipped: 0, errors: 0 });
     setUploadStatus('Subiendo archivos...');
     
     await continueUpload();
-  };
-
-  const handleConfirmReplace = async (confirm) => {
-    if (confirm && pendingFile) {
-      setUploadStatus('Reemplazando bundle...');
-      
-      try {
-        const result = await uploadFile(pendingFile, true);
-        
-        if (result === 'success') {
-          // Incrementamos el índice para continuar con el siguiente archivo
-          const nextIndex = currentFileIndex + 1;
-          setCurrentFileIndex(nextIndex);
-          
-          // Actualizamos el progreso
-          setProcessedFiles(nextIndex);
-          setProgress((nextIndex / xmlFiles.length) * 100);
-          
-          // Continuamos con el resto de la subida
-          await continueUpload();
-        } else {
-          setUploadStatus('Error al reemplazar el bundle.');
-        }
-      } catch (error) {
-        console.error('Error al reemplazar:', error);
-        setUploadStatus(`Error al reemplazar: ${error.message}`);
-      }
-    } else {
-      // Si no se confirma, simplemente saltamos este archivo y continuamos con el siguiente
-      const nextIndex = currentFileIndex + 1;
-      setCurrentFileIndex(nextIndex);
-      
-      // Actualizamos el progreso
-      setProcessedFiles(nextIndex);
-      setProgress((nextIndex / xmlFiles.length) * 100);
-      
-      if (nextIndex < xmlFiles.length) {
-        // Continuamos con el resto de la subida si hay más archivos
-        await continueUpload();
-      } else {
-        // Si no hay más archivos, finalizamos
-        setUploadStatus('Proceso completado.');
-      }
-    }
-    
-    // Limpiamos el estado de confirmación
-    setConfirmReplace(null);
-    setPendingFile(null);
   };
 
   return (
@@ -206,7 +156,7 @@ export default function FileUploader() {
       </button>
       
       {/* Barra de progreso */}
-      {progress > 0 && !confirmReplace && (
+      {progress > 0 && (
         <div className="mt-4">
           <div className="w-full bg-gray-700 rounded-full h-2.5">
             <div 
@@ -214,38 +164,22 @@ export default function FileUploader() {
               style={{ width: `${progress}%` }}
             ></div>
           </div>
-          <p className="text-gray-300 text-sm mt-2">
-            Procesando: {processedFiles} de {totalFiles} archivos
-          </p>
-        </div>
-      )}
-      
-      {/* Diálogo de confirmación */}
-      {confirmReplace && (
-        <div className="mt-4 p-4 bg-gray-700 rounded-lg border border-yellow-500/30">
-          <div className="flex items-start gap-3 mb-3">
-            <FiInfo className="text-yellow-400 text-lg flex-shrink-0 mt-1" />
-            <p className="text-white">
-              El bundle <span className="font-medium text-yellow-300">{confirmReplace.bundleName}</span> del trabajo <span className="font-medium text-yellow-300">{confirmReplace.jobNumber}</span> ya existe en la base de datos. ¿Deseas reemplazarlo?
-            </p>
-          </div>
-          <div className="flex gap-3 mt-4">
-            <button
-              onClick={() => handleConfirmReplace(true)}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center justify-center gap-2 transition-colors"
-              disabled={isUploading}
-            >
-              <FiCheckCircle />
-              <span>Sí, reemplazar</span>
-            </button>
-            <button
-              onClick={() => handleConfirmReplace(false)}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded flex items-center justify-center gap-2 transition-colors"
-              disabled={isUploading}
-            >
-              <FiXCircle />
-              <span>No, omitir</span>
-            </button>
+          <div className="flex flex-wrap items-center justify-between text-gray-300 text-sm mt-2">
+            <div>Procesando: {processedFiles} de {totalFiles} archivos</div>
+            <div className="flex gap-4">
+              <span className="text-green-400 flex items-center gap-1">
+                <FiCheckCircle />
+                {stats.success}
+              </span>
+              <span className="text-blue-400 flex items-center gap-1">
+                <FiSkipForward />
+                {stats.skipped}
+              </span>
+              <span className="text-red-400 flex items-center gap-1">
+                <FiXCircle />
+                {stats.errors}
+              </span>
+            </div>
           </div>
         </div>
       )}
