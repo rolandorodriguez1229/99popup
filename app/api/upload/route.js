@@ -1,7 +1,23 @@
 import { supabase } from '@/lib/supabase';
 import { parseStringPromise } from 'xml2js';
+import { NextResponse } from 'next/server';
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '30mb', // Aumentar a 30MB
+    },
+    responseLimit: false, // Desactivar límite de respuesta
+  },
+};
 
 export async function POST(req) {
+  // Crear un timeout para toda la operación
+  const operationTimeout = setTimeout(() => {
+    console.error('Operación abortada por timeout global');
+    req.signal.abort();
+  }, 120000); // 2 minutos timeout global
+  
   try {
     const formData = await req.formData();
     const file = formData.get('file');
@@ -76,19 +92,25 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'No MEMBER_DATA found in XML' }), { status: 400 });
     }
 
-    // Crear el nuevo bundle
-    const { data: bundleData, error: bundleError } = await supabase
-      .from('bundle99')
-      .insert({
-        job_number: jobNumber,
-        bundle_name: bundleName
-      })
-      .select()
-      .single();
+    // Añadir un timeout más largo para operaciones de base de datos
+    const timeout = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database operation timed out')), 30000)
+    );
+    
+    // Usar Promise.race para manejar timeouts en operaciones largas
+    const bundleResult = await Promise.race([
+      supabase
+        .from('bundle99')
+        .insert({
+          job_number: jobNumber,
+          bundle_name: bundleName
+        })
+        .select()
+        .single(),
+      timeout
+    ]);
 
-    if (bundleError) {
-      return new Response(JSON.stringify({ error: bundleError.message }), { status: 500 });
-    }
+    const bundleData = await bundleResult;
 
     const bundleId = bundleData.id;
 
@@ -136,7 +158,29 @@ export async function POST(req) {
     );
 
   } catch (error) {
+    // Limpiar el timeout en caso de error
+    clearTimeout(operationTimeout);
+    
+    // Mejorar el manejo de errores
     console.error('❌ Error general:', error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    
+    let errorMessage = error.message;
+    let errorCode = error.code || 'UNKNOWN_ERROR';
+    
+    if (error.code === 'ECONNRESET') {
+      errorMessage = 'La conexión se cerró inesperadamente. El archivo podría ser demasiado grande o la operación tomó demasiado tiempo.';
+    } else if (error.name === 'AbortError') {
+      errorMessage = 'La operación fue abortada por timeout.';
+      errorCode = 'TIMEOUT';
+    } else if (error.message.includes('timeout')) {
+      errorMessage = 'La operación excedió el tiempo máximo permitido.';
+      errorCode = 'TIMEOUT';
+    }
+    
+    return NextResponse.json({ 
+      error: errorMessage,
+      code: errorCode,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    }, { status: 500 });
   }
 }

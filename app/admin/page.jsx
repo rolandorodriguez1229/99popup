@@ -5,6 +5,7 @@ import { FiArrowLeft, FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import JobsList from '@/components/JobsList';
 import ExcelTables from '@/components/ExcelTables';
 import AdminContent from './AdminContent';
+import JobsManager from '../components/JobsManager';
 
 export default function Admin() {
   const [isJobsListExpanded, setIsJobsListExpanded] = useState(false);
@@ -20,6 +21,10 @@ export default function Admin() {
             router={router}
           />
         </Suspense>
+        
+        <div className="mb-8">
+          <JobsManager />
+        </div>
       </div>
     </main>
   );

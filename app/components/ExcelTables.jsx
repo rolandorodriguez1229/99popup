@@ -572,6 +572,7 @@ export default function ExcelTables() {
         
         if (error) throw error;
         existingAssignments = data || [];
+        console.log(`Encontradas ${existingAssignments.length} asignaciones existentes`);
       } else {
         // Si no estamos en modo agregar, eliminamos las asignaciones existentes
         const { error: deleteError } = await supabase
@@ -581,6 +582,7 @@ export default function ExcelTables() {
           .eq('assignment_date', today);
         
         if (deleteError) throw deleteError;
+        console.log('Asignaciones existentes eliminadas');
       }
       
       // Filtrar para añadir solo trabajos que no existen (en modo agregar)
@@ -598,6 +600,8 @@ export default function ExcelTables() {
         setIsLoading(false);
         return;
       }
+      
+      console.log(`Se van a ${addMode ? 'agregar' : 'reemplazar'} ${filteredData.length} trabajos`);
       
       // Preparar datos completos incluyendo miembros
       const completeData = filteredData.map(row => {
@@ -1216,32 +1220,35 @@ export default function ExcelTables() {
             <span>Subir XML</span>
           </button>
           
-           {/* Botones separados para Reemplazar y Añadir a línea */}
-  {(lineNumber === 1 ? line1Data.length > 0 : line2Data.length > 0) && (
-    <div className="flex gap-2">
-      {/* Botón para reemplazar línea */}
-      <button
-        onClick={() => {
-          setAddMode(false); // Modo reemplazar
-          assignToLine(lineNumber);
-        }}
-        className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition-colors shadow-md"
-        disabled={isLoading}
-      >
-        <FiShare className="transform -rotate-90" />
-        <span>Reemplazar línea {lineNumber}</span>
-      </button>
-      
-          {/* Botón para enviar a línea */}
+          {/* Botones para reemplazar y agregar a línea */}
           {(lineNumber === 1 ? line1Data.length > 0 : line2Data.length > 0) && (
-            <button
-              onClick={() => assignToLine(lineNumber)}
-              className={`flex items-center gap-2 ${addMode ? 'bg-amber-500 hover:bg-amber-600' : 'bg-indigo-500 hover:bg-indigo-600'} text-white px-4 py-2 rounded transition-colors shadow-md`}
-              disabled={isLoading}
-            >
-              <FiShare className="transform -rotate-90" />
-              <span>{addMode ? 'Agregar a' : 'Reemplazar'} línea {lineNumber}</span>
-            </button>
+            <div className="flex gap-2">
+              {/* Botón para reemplazar línea */}
+              <button
+                onClick={() => {
+                  setAddMode(false); // Modo reemplazar
+                  assignToLine(lineNumber);
+                }}
+                className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition-colors shadow-md"
+                disabled={isLoading}
+              >
+                <FiShare className="transform -rotate-90" />
+                <span>Reemplazar línea {lineNumber}</span>
+              </button>
+              
+              {/* Botón para agregar a línea (solo trabajos nuevos) */}
+              <button
+                onClick={() => {
+                  setAddMode(true); // Modo agregar
+                  assignToLine(lineNumber);
+                }}
+                className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors shadow-md"
+                disabled={isLoading}
+              >
+                <FiPlus />
+                <span>Agregar nuevos a línea {lineNumber}</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
